@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
     
-    <title>VG TV - Channel Grid</title>
-    <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/fav.png">
+    <title>VG TV - Channels</title>
     
     <style>
         :root {
@@ -29,16 +28,43 @@
             overflow: hidden;
         }
 
-        /* --- Header --- */
+        /* --- Header & Filters --- */
         .header {
-            padding: 20px;
+            padding: 15px 20px;
             background: #0b1120;
             border-bottom: 2px solid var(--accent);
-            text-align: center;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             z-index: 10;
         }
-        .header h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        
+        .header h1 { font-size: 20px; font-weight: bold; color: var(--accent); margin-right: 10px; white-space: nowrap;}
+
+        .filter-group { 
+            display: flex; 
+            gap: 10px; 
+            flex: 1;
+            min-width: 250px;
+        }
+
+        select, input { 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--card-border); 
+            background: #000; 
+            color: #fff; 
+            outline: none; 
+            font-size: 14px; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        input[type="text"] { flex: 1; min-width: 150px; }
+        select { min-width: 200px; font-weight: bold; }
+        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(229, 9, 20, 0.4); }
 
         /* --- Grid Layout --- */
         .grid-container { 
@@ -117,10 +143,7 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .modal-content {
             background: var(--card);
@@ -135,9 +158,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8);
         }
-        .modal-overlay.active .modal-content {
-            transform: translateY(0) scale(1);
-        }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
         
         .modal-header {
             padding: 20px;
@@ -149,9 +170,7 @@
             gap: 15px;
             position: relative;
         }
-        .modal-header img {
-            width: 60px; height: 60px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px;
-        }
+        .modal-header img { width: 60px; height: 60px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px; }
         .modal-header-text h2 { font-size: 18px; color: #fff; margin-bottom: 5px; }
         
         .close-btn {
@@ -193,18 +212,18 @@
             word-break: break-all;
             user-select: all; 
         }
-        .data-value.cookie {
-            max-height: 80px;
-            overflow-y: auto;
-            color: #10b981; 
-        }
+        .data-value.cookie { color: #10b981; max-height: 80px; overflow-y: auto;}
 
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
         @media (max-width: 600px) {
+            .header { flex-direction: column; padding: 15px; }
+            .filter-group { flex-direction: column; width: 100%; }
+            select { width: 100%; }
             .grid-container { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); padding: 15px; gap: 10px; }
             .modal-content { width: 95%; }
         }
@@ -213,7 +232,14 @@
 <body>
 
     <div class="header">
-        <h1>LIVE CHANNELS</h1>
+        <h1>📺 VG TV</h1>
+        
+        <div class="filter-group">
+            <input type="text" id="searchInput" placeholder="Search channels...">
+            <select id="catFilter">
+                <option value="all">All Categories</option>
+            </select>
+        </div>
     </div>
 
     <div id="grid" class="grid-container">
@@ -223,7 +249,7 @@
     <div id="dataModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <img id="modalImg" src="" alt="Channel Logo">
+                <img id="modalImg" src="" alt="Channel Logo" referrerpolicy="no-referrer">
                 <div class="modal-header-text">
                     <h2 id="modalTitle">Channel Name</h2>
                     <span id="modalCategory" class="card-badge">Category</span>
@@ -233,7 +259,7 @@
             
             <div class="modal-body">
                 <div class="data-group">
-                    <span class="data-label">Stream URL (MPD)</span>
+                    <span class="data-label">Stream URL (Cleaned to .mpd)</span>
                     <div id="modalUrl" class="data-value">...</div>
                 </div>
                 <div class="data-group">
@@ -254,9 +280,16 @@
 
     <script>
         const API_URL = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json";
+        
+        let allChannels = [];
+        
+        // DOM Elements
         const grid = document.getElementById('grid');
+        const searchInput = document.getElementById('searchInput');
+        const catFilter = document.getElementById('catFilter');
         const modal = document.getElementById('dataModal');
 
+        // 1. Fetch JSON Data
         async function loadChannels() {
             try {
                 let res = await fetch(API_URL);
@@ -267,80 +300,123 @@
 
                 const rawData = await res.json();
                 
+                // Locate Array in JSON
                 let channelsList = [];
                 if (Array.isArray(rawData)) {
                     channelsList = rawData;
                 } else if (typeof rawData === 'object' && rawData !== null) {
-                    let foundArray = false;
                     for (let key in rawData) {
                         if (Array.isArray(rawData[key])) { 
                             channelsList = rawData[key]; 
-                            foundArray = true;
                             break; 
                         }
-                    }
-                    if (!foundArray) {
-                        channelsList = Object.values(rawData).filter(item => typeof item === 'object' && item !== null);
                     }
                 }
 
                 if (channelsList.length === 0) {
-                    grid.innerHTML = '<div class="status-msg">JSON loaded, but could not parse a valid list of channels. Check JSON format.</div>';
+                    grid.innerHTML = '<div class="status-msg">JSON loaded, but could not parse a valid list of channels.</div>';
                     return;
                 }
 
-                const globalCookie = extractGlobalCookie(rawData);
-
-                const formattedChannels = channelsList.map(channel => {
-                    // Extract the raw logo URL first
-                    let rawLogo = channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV";
+                // Parse Data & Clean URL
+                allChannels = channelsList.map(channel => {
                     
-                    // PROXY FIX: If the logo is from Jio, route it through wsrv.nl to bypass the 403 Forbidden block
-                    if (rawLogo.includes('jio.com')) {
-                        rawLogo = 'https://wsrv.nl/?url=' + encodeURIComponent(rawLogo);
+                    // SMART URL CLEANER: Ensures it only goes up to .mpd
+                    let rawUrl = channel["channel url"] || channel.channel_url || channel.url || "";
+                    let cleanedUrl = rawUrl;
+                    if (cleanedUrl.includes('.mpd')) {
+                        cleanedUrl = cleanedUrl.substring(0, cleanedUrl.indexOf('.mpd') + 4);
+                    } else if (cleanedUrl.includes('?')) {
+                        cleanedUrl = cleanedUrl.split('?')[0];
                     }
 
                     return {
-                        name: channel["channel name"] || channel.channel_name || channel.name || channel.title || "Unknown Channel",
-                        logo: rawLogo, // <--- Using the proxied image URL here
-                        category: channel["channel category"] || channel.channel_category || channel.category || channel.genre || "General",
-                        url: channel["channel url"] || channel.channel_url || channel.url || channel.stream_url || "N/A",
-                        keyId: channel["channel key id"] || channel["key id"] || channel.channel_key_id || channel.keyId || channel.kid || "N/A",
-                        key: channel["channel key"] || channel.channel_key || channel.key || channel.k || "N/A",
-                        cookie: channel["channel cookie"] || channel.channel_cookie || channel.cookie || globalCookie || "N/A"
+                        name: channel["channel name"] || channel.channel_name || channel.name || "Unknown Channel",
+                        logo: channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
+                        category: channel["channel category"] || channel.channel_category || channel.category || "Uncategorized",
+                        url: cleanedUrl || "No URL Provided",
+                        keyId: channel["channel key id"] || channel.channel_key_id || channel.keyId || "Null",
+                        key: channel["channel key"] || channel.channel_key || channel.key || "Null",
+                        cookie: channel["channel cookie"] || channel.channel_cookie || channel.cookie || "Null"
                     };
                 });
 
-                grid.innerHTML = '';
-                formattedChannels.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-                    createCard(c);
-                });
+                allChannels.sort((a, b) => a.name.localeCompare(b.name));
+                
+                populateCategories();
+                applyFilters();
 
             } catch (err) {
                 console.error(err);
-                grid.innerHTML = `<div class="status-msg" style="color:#ef4444;">Error Loading Data: ${err.message}</div>`;
+                grid.innerHTML = `<div class="status-msg" style="color:#ef4444;">Error Loading Data.</div>`;
             }
         }
 
-        function extractGlobalCookie(data) {
-            const str = JSON.stringify(data);
-            const match = str.match(/__hdnea__=[^"'\s\\]+/);
-            return match ? match[0] : null;
+        // 2. Populate Categories WITH COUNTS
+        function populateCategories() {
+            const currentCat = catFilter.value;
+            const counts = {};
+
+            // Count how many channels are in each category
+            allChannels.forEach(c => {
+                counts[c.category] = (counts[c.category] || 0) + 1;
+            });
+            
+            // Sort categories alphabetically
+            const sortedCategories = Object.keys(counts).sort();
+            
+            // Build Dropdown HTML
+            let html = `<option value="all">All Categories (${allChannels.length})</option>`;
+            sortedCategories.forEach(cat => {
+                 const isSelected = cat === currentCat ? 'selected' : '';
+                 html += `<option value="${cat}" ${isSelected}>${cat} (${counts[cat]})</option>`;
+            });
+            
+            catFilter.innerHTML = html;
         }
 
-        function createCard(c) {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.onclick = () => openModal(c);
+        // 3. Render Grid
+        function renderGrid(channelsToRender) {
+            grid.innerHTML = ''; 
+            
+            if (channelsToRender.length === 0) {
+                grid.innerHTML = `<div class="status-msg">No channels found.</div>`;
+                return;
+            }
 
-            card.innerHTML = `
-                <img src="${c.logo}" loading="lazy" onerror="this.src='https://via.placeholder.com/100?text=TV'">
-                <div class="card-title" title="${c.name}">${c.name}</div>
-                <div class="card-badge">${c.category}</div>
-            `;
-            grid.appendChild(card);
+            channelsToRender.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openModal(c);
+
+                card.innerHTML = `
+                    <img src="${c.logo}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/100?text=TV'">
+                    <div class="card-title" title="${c.name}">${c.name}</div>
+                    <div class="card-badge">${c.category}</div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
+        // 4. Handle Filters
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCat = catFilter.value;
+
+            const filteredChannels = allChannels.filter(c => {
+                const matchSearch = c.name.toLowerCase().includes(searchTerm);
+                const matchCat = (selectedCat === "all") || (c.category === selectedCat);
+                return matchSearch && matchCat;
+            });
+
+            renderGrid(filteredChannels);
+        }
+
+        // Event Listeners for Filters
+        searchInput.addEventListener('input', applyFilters);
+        catFilter.addEventListener('change', applyFilters);
+
+        // 5. Modal Logic
         function openModal(c) {
             document.getElementById('modalImg').src = c.logo;
             document.getElementById('modalTitle').innerText = c.name;
@@ -351,18 +427,19 @@
             document.getElementById('modalKey').innerText = c.key;
             document.getElementById('modalCookie').innerText = c.cookie;
 
-            const modal = document.getElementById('dataModal');
             modal.classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('dataModal').classList.remove('active');
+            modal.classList.remove('active');
         }
 
-        document.getElementById('dataModal').addEventListener('click', function(e) {
+        // Close when clicking outside the modal box
+        modal.addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
+        // Initialize App
         loadChannels();
     </script>
 </body>
