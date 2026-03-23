@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Channels Grid</title>
     <style>
-        /* --- Color Palette --- */
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -15,37 +14,19 @@
             --accent: #e50914;
         }
         
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-        }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
+        h1 { text-align: center; margin-bottom: 30px; color: var(--text-color); font-size: 24px; }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--text-color);
-            font-size: 24px;
-        }
-
-        /* --- Grid System --- */
         .grid-container {
             display: grid;
-            /* Creates columns that dynamically adjust based on screen size */
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* --- Card Styles --- */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -64,41 +45,20 @@
         }
 
         .card img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 5px;
-            margin-bottom: 12px;
+            width: 80px; height: 80px; object-fit: contain; background-color: #ffffff;
+            border-radius: 8px; padding: 5px; margin-bottom: 12px;
         }
 
         .card-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            /* Truncate long names with an ellipsis (...) */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 14px; font-weight: 600; margin-bottom: 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
         .card-category {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 0.5px;
+            font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;
         }
 
-        /* --- Loading & Error States --- */
-        .message {
-            text-align: center;
-            grid-column: 1 / -1;
-            padding: 40px;
-            color: var(--text-muted);
-            font-size: 16px;
-        }
+        .message { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); font-size: 16px; }
     </style>
 </head>
 <body>
@@ -110,58 +70,68 @@
     </div>
 
     <script>
-        // The target JSON URL
         const JSON_URL = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json";
 
         async function fetchAndRenderChannels() {
             const grid = document.getElementById('grid');
+            let rawData;
 
             try {
-                // Fetch the data
-                const response = await fetch(JSON_URL);
+                // Attempt 1: Direct Fetch
+                let response = await fetch(JSON_URL);
+                
+                // If direct fetch fails (e.g., CORS block), try Proxy
                 if (!response.ok) {
-                    throw new Error("Failed to fetch JSON data");
+                    console.log("Direct fetch failed, trying proxy...");
+                    response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(JSON_URL));
+                }
+
+                // If proxy also fails, throw error
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status} (File might be private or missing)`);
                 }
                 
-                const data = await response.json();
-
-                // Clear the "Loading..." message
-                grid.innerHTML = '';
-
-                // Verify data exists
-                if (!data || data.length === 0) {
-                    grid.innerHTML = '<div class="message">No channels found in JSON.</div>';
-                    return;
-                }
-
-                // Loop through the data array
-                data.forEach(channel => {
-                    // Smart Extraction: Checks multiple common key names to ensure it catches your data
-                    const name = channel.channel_name || channel.name || channel.title || "Unknown Channel";
-                    const logo = channel.channel_logo || channel.logo || channel.logo_url || "https://via.placeholder.com/80?text=TV";
-                    const category = channel.channel_genre || channel.category || channel.genre || "General";
-
-                    // Create the Card HTML
-                    const card = document.createElement('div');
-                    card.className = 'card';
-
-                    card.innerHTML = `
-                        <img src="${logo}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=TV'">
-                        <div class="card-title" title="${name}">${name}</div>
-                        <div class="card-category">${category}</div>
-                    `;
-
-                    // Add the card to the grid
-                    grid.appendChild(card);
-                });
+                rawData = await response.json();
 
             } catch (error) {
                 console.error("Error:", error);
-                grid.innerHTML = '<div class="message" style="color: #ef4444;">Error loading channels. Please check the network connection.</div>';
+                grid.innerHTML = `<div class="message" style="color: #ef4444;">
+                    <strong>Error loading channels:</strong><br>
+                    ${error.message}<br><br>
+                    <em>Note: If your GitHub repository is set to 'Private', the code won't be able to read the JSON file.</em>
+                </div>`;
+                return;
             }
+
+            // Clear loading message
+            grid.innerHTML = '';
+
+            // Verify data exists
+            if (!rawData || rawData.length === 0) {
+                grid.innerHTML = '<div class="message">No channels found in JSON.</div>';
+                return;
+            }
+
+            // Render data
+            rawData.forEach(channel => {
+                const name = channel.channel_name || channel.name || channel.title || "Unknown Channel";
+                const logo = channel.channel_logo || channel.logo || channel.logo_url || "https://via.placeholder.com/80?text=TV";
+                const category = channel.channel_genre || channel.category || channel.genre || "General";
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                card.innerHTML = `
+                    <img src="${logo}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=TV'">
+                    <div class="card-title" title="${name}">${name}</div>
+                    <div class="card-category">${category}</div>
+                `;
+
+                grid.appendChild(card);
+            });
         }
 
-        // Run the function when the script loads
+        // Run on load
         fetchAndRenderChannels();
     </script>
 </body>
