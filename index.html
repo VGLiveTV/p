@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VG TV - Channel Directory</title>
-    <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/fav.png">
+    <title>VG TV - Channel Grid</title>
     
     <style>
         :root {
@@ -16,7 +15,7 @@
             --sub-text: #94a3b8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         
         body { 
             background: var(--bg); 
@@ -24,49 +23,27 @@
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
+            overflow: hidden;
         }
 
-        /* --- Navbar & Filters --- */
-        .nav { 
-            padding: 15px 20px; 
-            background: #0b1120; 
-            border-bottom: 2px solid var(--accent); 
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
+        /* --- Header --- */
+        .header {
+            padding: 20px;
+            background: #0b1120;
+            border-bottom: 2px solid var(--accent);
+            text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 10;
         }
-        
-        .nav-logo { height: 35px; object-fit: contain; }
-
-        .filter-group { 
-            display: flex; 
-            gap: 10px; 
-            flex: 1;
-        }
-
-        select, input { 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid var(--card-border); 
-            background: #000; 
-            color: #fff; 
-            outline: none; 
-            font-size: 14px; 
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        input[type="text"] { flex: 1; min-width: 150px; }
-        select { flex: 1; min-width: 120px; }
-        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(229, 9, 20, 0.4); }
+        .header h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
 
         /* --- Grid Layout --- */
-        .grid { 
+        .grid-container { 
             flex: 1; 
             overflow-y: auto; 
             padding: 20px; 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
             gap: 15px; 
             align-content: start;
         }
@@ -82,16 +59,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
         .card:hover { 
             border-color: var(--accent); 
-            transform: translateY(-4px); 
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 15px rgba(229, 9, 20, 0.2);
         }
 
         .card img { 
-            width: 70px; 
-            height: 70px; 
+            width: 80px; 
+            height: 80px; 
             object-fit: contain; 
             background: #fff; 
             border-radius: 8px; 
@@ -109,335 +87,269 @@
             margin-bottom: 8px;
         }
 
-        .card-badges {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .badge {
+        .card-badge {
             font-size: 10px;
-            padding: 3px 6px;
+            padding: 4px 8px;
             border-radius: 4px;
             font-weight: bold;
             background: rgba(255,255,255,0.05);
             color: var(--sub-text);
+            border-left: 2px solid var(--accent);
+            text-transform: uppercase;
         }
-        .badge.category { border-left: 2px solid var(--accent); }
-        .badge.language { border-left: 2px solid #3b82f6; }
 
-        .status-msg { grid-column: 1/-1; text-align: center; color: var(--sub-text); margin-top: 50px; font-size: 16px; }
+        .status-msg { grid-column: 1/-1; text-align: center; color: var(--sub-text); padding: 40px; font-size: 16px; }
 
-        /* Custom Scrollbar */
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: #0b1120;
+            border-bottom: 1px solid var(--card-border);
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+        .modal-header img {
+            width: 60px; height: 60px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px;
+        }
+        .modal-header-text h2 { font-size: 18px; color: #fff; margin-bottom: 5px; }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: none; border: none;
+            color: var(--sub-text); font-size: 28px;
+            cursor: pointer; line-height: 1; transition: 0.2s;
+        }
+        .close-btn:hover { color: var(--accent); }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .data-group {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px 15px;
+        }
+        .data-label {
+            font-size: 11px;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+        .data-value {
+            font-size: 13px;
+            color: #e2e8f0;
+            font-family: monospace;
+            word-break: break-all;
+            user-select: all; /* Makes it easy to copy */
+        }
+        .data-value.cookie {
+            max-height: 80px;
+            overflow-y: auto;
+            color: #10b981; /* Green color to differentiate cookie */
+        }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 650px) {
-            .nav { 
-                display: grid;
-                grid-template-columns: auto 1fr;
-                padding: 12px 10px; 
-                gap: 10px;
-            }
-            .nav-logo { height: 42px; }
-            #searchInput { width: 100%; font-size: 15px; padding: 10px 12px; }
-            .filter-group { 
-                grid-column: 1 / -1; 
-                display: flex; flex-direction: row; width: 100%; gap: 10px;
-            }
-            select { font-size: 14px; padding: 10px; width: 100%; }
-            .grid { padding: 15px 10px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-            .card { padding: 12px; }
-            .card img { width: 60px; height: 60px; }
+        @media (max-width: 600px) {
+            .grid-container { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); padding: 15px; gap: 10px; }
+            .modal-content { width: 95%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="nav">
-        <img src="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/logo.png" alt="VG TV Logo" class="nav-logo">
-        
-        <input type="text" id="searchInput" placeholder="Search channels...">
-        
-        <div class="filter-group">
-            <select id="catFilter">
-                <option value="all">All Categories</option>
-            </select>
-            <select id="langFilter">
-                <option value="all">All Languages</option>
-                <option value="Hindi" selected>Hindi</option>
-            </select>
-        </div>
+    <div class="header">
+        <h1>LIVE CHANNELS</h1>
     </div>
 
-    <div id="grid" class="grid">
-        <div class="status-msg">Loading channels...</div>
+    <div id="grid" class="grid-container">
+        <div class="status-msg">Fetching Channels Data...</div>
+    </div>
+
+    <div id="dataModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img id="modalImg" src="" alt="Channel Logo">
+                <div class="modal-header-text">
+                    <h2 id="modalTitle">Channel Name</h2>
+                    <span id="modalCategory" class="card-badge">Category</span>
+                </div>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="data-group">
+                    <span class="data-label">Stream URL (MPD)</span>
+                    <div id="modalUrl" class="data-value">...</div>
+                </div>
+                <div class="data-group">
+                    <span class="data-label">Key ID (KID)</span>
+                    <div id="modalKeyId" class="data-value">...</div>
+                </div>
+                <div class="data-group">
+                    <span class="data-label">Key</span>
+                    <div id="modalKey" class="data-value">...</div>
+                </div>
+                <div class="data-group">
+                    <span class="data-label">Auth Cookie</span>
+                    <div id="modalCookie" class="data-value cookie">...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const API_URL = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json";
-        
-        let allChannels = [];
-        let globalLiveCookie = ""; // Fetched dynamically
-        
         const grid = document.getElementById('grid');
-        const searchInput = document.getElementById('searchInput');
-        const catFilter = document.getElementById('catFilter');
-        const langFilter = document.getElementById('langFilter');
+        const modal = document.getElementById('dataModal');
 
-        // 1. Fetch Data
-        async function fetchChannels() {
-            let raw;
+        // Fetch and initialize data
+        async function loadChannels() {
             try {
+                // Fetch with CORS Proxy fallback just in case GitHub blocks direct browser requests
                 let res = await fetch(API_URL);
-                if (!res.ok) throw new Error("Direct API Failed");
-                raw = await res.json();
-            } catch (err) {
-                try {
-                    let res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
-                    if (!res2.ok) throw new Error("Proxy API Failed");
-                    raw = await res2.json();
-                } catch(proxyErr) {
-                    grid.innerHTML = `<div class="status-msg" style="color:red;">Failed to Load Channels.</div>`;
-                    return;
+                if (!res.ok) {
+                    res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
                 }
-            }
+                if (!res.ok) throw new Error("Failed to load JSON file.");
 
-            // SMART COOKIE EXTRACTOR: Grabs "__hdnea__=..." from the JSON payload
-            const jsonStr = JSON.stringify(raw);
-            const cookieMatch = jsonStr.match(/__hdnea__=[^"'\s\\]+/);
-            if (cookieMatch) {
-                globalLiveCookie = cookieMatch[0];
-            } else {
-                globalLiveCookie = "No cookie found in API";
-            }
-
-            // Smart Array Extraction
-            let channelsArray = [];
-            if (Array.isArray(raw)) {
-                channelsArray = raw;
-            } else if (typeof raw === 'object') {
-                for (let key in raw) {
-                    if (Array.isArray(raw[key])) {
-                        channelsArray = raw[key];
-                        break;
+                const rawData = await res.json();
+                
+                // Smart Array Extraction: Finds the channel list whether it's the root array or nested inside an object
+                let channelsList = Array.isArray(rawData) ? rawData : [];
+                if (channelsList.length === 0 && typeof rawData === 'object') {
+                    for (let key in rawData) {
+                        if (Array.isArray(rawData[key])) { channelsList = rawData[key]; break; }
                     }
                 }
+
+                if (channelsList.length === 0) {
+                    grid.innerHTML = '<div class="status-msg">No channels found in the provided JSON.</div>';
+                    return;
+                }
+
+                // Format & Render
+                grid.innerHTML = '';
+                channelsList.forEach(channel => {
+                    // Adapt to variations in JSON keys
+                    const c = {
+                        name: channel.channel_name || channel.name || channel.title || "Unknown Channel",
+                        logo: channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
+                        category: channel.channel_category || channel.category || channel.genre || "General",
+                        url: channel.channel_url || channel.url || channel.stream_url || "N/A",
+                        keyId: channel.channel_key_id || channel.key_id || channel.keyId || channel.kid || "N/A",
+                        key: channel.channel_key || channel.key || channel.k || "N/A",
+                        cookie: channel.channel_cookie || channel.cookie || channel.__hdnea__ || extractGlobalCookie(rawData) || "N/A"
+                    };
+
+                    createCard(c);
+                });
+
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = `<div class="status-msg" style="color:#ef4444;">Error Loading Data: Make sure the JSON URL is correct and public.</div>`;
             }
+        }
 
-            allChannels = formatData(channelsArray);
-            allChannels.sort((a, b) => a.name.localeCompare(b.name));
+        // Extracts a global __hdnea__ cookie if it's placed outside the individual channel objects
+        function extractGlobalCookie(data) {
+            const str = JSON.stringify(data);
+            const match = str.match(/__hdnea__=[^"'\s\\]+/);
+            return match ? match[0] : null;
+        }
+
+        // Create Grid Card
+        function createCard(c) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openModal(c);
+
+            card.innerHTML = `
+                <img src="${c.logo}" loading="lazy" onerror="this.src='https://via.placeholder.com/100?text=TV'">
+                <div class="card-title" title="${c.name}">${c.name}</div>
+                <div class="card-badge">${c.category}</div>
+            `;
+            grid.appendChild(card);
+        }
+
+        // Open Modal with Data
+        function openModal(c) {
+            document.getElementById('modalImg').src = c.logo;
+            document.getElementById('modalTitle').innerText = c.name;
+            document.getElementById('modalCategory').innerText = c.category;
             
-            populateFilters(); 
-            applyFilters();
+            document.getElementById('modalUrl').innerText = c.url;
+            document.getElementById('modalKeyId').innerText = c.keyId;
+            document.getElementById('modalKey').innerText = c.key;
+            document.getElementById('modalCookie').innerText = c.cookie;
+
+            modal.classList.add('active');
         }
 
-        // 2. Format Data
-        function formatData(data) {
-            return data.map(c => ({
-                name: c.channel_name || c.name || c.title || "Unknown Channel",
-                logo: c.channel_logo || c.logo || c.logo_url || "https://via.placeholder.com/70?text=TV",
-                category: c.channel_genre || c.category || c.genre || "Others",
-                language: c.channel_language || c.language || c.lang || "Others",
-                url: c.channel_url || c.url || c.stream_url || "No URL Provided",
-                keyId: c.keyId || c.kid || c.clearkey_id || "Null",
-                key: c.key || c.clearkey_hex || c.k || "Null"
-            }));
+        // Close Modal
+        function closeModal() {
+            modal.classList.remove('active');
         }
 
-        // 3. Dropdowns
-        function populateFilters() {
-            const currentCat = catFilter.value;
-            const currentLang = langFilter.value;
+        // Click outside modal to close
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
 
-            const catBaseList = allChannels.filter(c => currentLang === "all" ? true : c.language === currentLang);
-            const catCounts = {};
-            catBaseList.forEach(c => catCounts[c.category] = (catCounts[c.category] || 0) + 1);
-            
-            let catHTML = `<option value="all">All Categories (${catBaseList.length})</option>`;
-            Object.keys(catCounts).sort().forEach(cat => {
-                 catHTML += `<option value="${cat}" ${cat === currentCat ? 'selected' : ''}>${cat} (${catCounts[cat]})</option>`;
-            });
-            catFilter.innerHTML = catHTML;
-
-            const langBaseList = allChannels.filter(c => currentCat === "all" ? true : c.category === currentCat);
-            const langCounts = {};
-            langBaseList.forEach(c => langCounts[c.language] = (langCounts[c.language] || 0) + 1);
-            
-            let langHTML = `<option value="all">All Languages (${langBaseList.length})</option>`;
-            Object.keys(langCounts).sort().forEach(lang => {
-                langHTML += `<option value="${lang}" ${lang === currentLang ? 'selected' : ''}>${lang} (${langCounts[lang]})</option>`;
-            });
-            langFilter.innerHTML = langHTML;
-        }
-
-        // 4. Render Grid
-        function renderGrid(channelsToRender) {
-            grid.innerHTML = ""; 
-            if (channelsToRender.length === 0) {
-                grid.innerHTML = `<div class="status-msg">No channels match your filters.</div>`;
-                return;
-            }
-            channelsToRender.forEach(c => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => playInNewTab(c);
-                card.innerHTML = `
-                    <img src="${c.logo}" alt="logo" loading="lazy" onerror="this.src='https://via.placeholder.com/70?text=TV'">
-                    <div class="card-title">${c.name}</div>
-                    <div class="card-badges">
-                        <span class="badge category">${c.category}</span>
-                        <span class="badge language">${c.language}</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // 5. Filtering
-        function applyFilters() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedCat = catFilter.value;
-            const selectedLang = langFilter.value;
-
-            const filteredChannels = allChannels.filter(c => {
-                const matchesSearch = c.name.toLowerCase().includes(searchTerm);
-                const matchesCat = (selectedCat === "all") || (c.category === selectedCat);
-                const matchesLang = (selectedLang === "all") || (c.language === selectedLang);
-                return matchesSearch && matchesCat && matchesLang;
-            });
-
-            renderGrid(filteredChannels);
-            populateFilters(); 
-        }
-
-        searchInput.addEventListener('input', applyFilters);
-        catFilter.addEventListener('change', applyFilters);
-        langFilter.addEventListener('change', applyFilters);
-
-        // 6. BLOB PLAYER - Exactly matched for clean .mpd URL and separate cookie
-        function playInNewTab(channel) {
-            // Take the URL exactly as provided in the JSON
-            const rawUrl = channel.url;
-            
-            // Clean up strictly if needed, but primarily use as-is
-            let cleanUrl = rawUrl;
-            if(cleanUrl.includes("?")) {
-                cleanUrl = cleanUrl.split('?')[0]; // Ensure it ends at .mpd
-            }
-
-            const safeKid = JSON.stringify(channel.keyId || "Null");
-            const safeKey = JSON.stringify(channel.key || "Null");
-            const safeCookie = JSON.stringify(globalLiveCookie);
-            const safeUrl = JSON.stringify(cleanUrl);
-            const safeName = JSON.stringify(channel.name || "VG TV Player");
-
-            const playerCode = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>${channel.name || 'VG TV Player'}</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/fav.png">
-  <meta name="referrer" content="no-referrer">
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"><\/script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" />
-
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
-    .shaka-video-container { width: 100%; height: 100%; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-    video { width: 100%; height: 100%; object-fit: contain; background: #000; }
-    .custom-watermark { position: absolute; z-index: 40; pointer-events: none; top: 65%; left: 6%; transform: translateY(-50%); font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.12); }
-    @media(max-width: 700px){ .custom-watermark { font-size: 9px; top: 60%; left: 16%; } }
-  </style>
-</head>
-<body>
-
-  <div class="shaka-video-container" id="player-container">
-    <video id="video" autoplay playsinline preload="metadata"></video>
-    <div class="custom-watermark"> </div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) return;
-
-      const videoEl = document.getElementById('video');
-      const container = document.getElementById('player-container');
-
-      const player = new shaka.Player(videoEl);
-      const ui = new shaka.ui.Overlay(player, container, videoEl);
-
-      ui.configure({
-        addBigPlayButton: true,
-        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','language','captions','picture_in_picture','quality','fullscreen'],
-        seekBarColors: { base: 'rgba(255,255,255,0.3)', buffered: 'rgba(229,9,20,0.5)', played: '#e50914' }
-      });
-
-      const kid = ${safeKid};
-      const key = ${safeKey};
-      const cookieString = ${safeCookie}; // e.g., "__hdnea__=st=1774246342..."
-      const streamUrl = ${safeUrl}; // e.g., "https://.../index.mpd"
-
-      // Configure DRM Keys
-      let drmConfig = { clearKeys: {} };
-      if (kid !== "Null" && key !== "Null") {
-        drmConfig.clearKeys[kid] = key;
-      }
-
-      player.configure({
-        drm: drmConfig,
-        manifest: { defaultPresentationDelay: 5 },
-        streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
-      });
-
-      // Appends the Cookie dynamically to segment/manifest requests
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        request.headers['Referer'] = 'https://www.jiotv.com/';
-        request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
-
-        if (cookieString && cookieString.includes('__hdnea__')) {
-          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-               !request.uris[0].includes('__hdnea__')) {
-            
-            // Connect the .mpd with a ? or &
-            const sep = request.uris[0].includes('?') ? '&' : '?';
-            request.uris[0] += sep + cookieString;
-          }
-        }
-      });
-
-      // Load Stream
-      try {
-        await player.load(streamUrl);
-        videoEl.play();
-      } catch (e) {
-        console.error("Stream Load Error:", e);
-        if (e.code === 6001) { 
-            player.configure({ drm: {} });
-            try { await player.load(streamUrl); videoEl.play(); } catch(err){}
-        }
-      }
-    });
-  <\/script>
-</body>
-</html>`;
-
-            const blob = new Blob([playerCode], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
-            window.open(blobUrl, '_blank');
-        }
-
-        fetchChannels();
+        // Initialize
+        loadChannels();
     </script>
 </body>
 </html>
