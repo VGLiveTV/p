@@ -3,136 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Channels Grid</title>
+    <title>Channels Grid - Diagnostic</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #e50914;
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #e50914; --text: #f8fafc; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
-        h1 { text-align: center; margin-bottom: 30px; color: var(--text-color); font-size: 24px; }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        .card img {
-            width: 80px; height: 80px; object-fit: contain; background-color: #ffffff;
-            border-radius: 8px; padding: 5px; margin-bottom: 12px;
-        }
-
-        .card-title {
-            font-size: 14px; font-weight: 600; margin-bottom: 6px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-
-        .card-category {
-            font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;
-        }
-
-        .message { text-align: center; grid-column: 1 / -1; padding: 40px; color: var(--text-muted); font-size: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px;}
+        .card { background: var(--card); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .card img { width: 60px; height: 60px; object-fit: contain; background: #fff; border-radius: 6px; padding: 4px; margin-bottom: 10px; }
+        .card-title { font-size: 13px; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        
+        /* Debug Console Styles */
+        .debug-container { grid-column: 1 / -1; background: #000; padding: 20px; border-radius: 8px; border: 1px solid #444; }
+        .debug-box { color: #10b981; font-family: monospace; white-space: pre-wrap; overflow-x: auto; font-size: 12px; background: #111; padding: 10px; border-radius: 4px; margin-top: 10px; max-height: 300px; overflow-y: auto;}
     </style>
 </head>
 <body>
-
-    <h1>Live Channels Directory</h1>
+    <h2 style="text-align: center; margin-bottom: 10px;">Live Channels</h2>
     
-    <div id="grid" class="grid-container">
-        <div class="message">Loading channels...</div>
+    <div id="grid" class="grid">
+        <div style="text-align:center; grid-column:1/-1; color:#888;">Fetching Data...</div>
     </div>
 
     <script>
-        const JSON_URL = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json";
+        const API_URL = "https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json";
+        const grid = document.getElementById('grid');
 
-        async function fetchAndRenderChannels() {
-            const grid = document.getElementById('grid');
-            let rawData;
-
+        async function loadChannels() {
             try {
-                // Attempt 1: Direct Fetch
-                let response = await fetch(JSON_URL);
+                // Attempt direct fetch
+                let res = await fetch(API_URL);
                 
-                // If direct fetch fails (e.g., CORS block), try Proxy
-                if (!response.ok) {
-                    console.log("Direct fetch failed, trying proxy...");
-                    response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(JSON_URL));
+                // If direct fails (CORS), use proxy
+                if (!res.ok) {
+                    res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
                 }
-
+                
                 // If proxy also fails, throw error
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status} (File might be private or missing)`);
-                }
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}: The file might be Private or Deleted.`);
+
+                const rawData = await res.json();
                 
-                rawData = await response.json();
+                // SMART ARRAY FINDER
+                // If the JSON isn't an array directly, look for an array inside the object
+                let channelsArray = [];
+                if (Array.isArray(rawData)) {
+                    channelsArray = rawData;
+                } else if (typeof rawData === 'object') {
+                    for (let key in rawData) {
+                        if (Array.isArray(rawData[key])) {
+                            channelsArray = rawData[key];
+                            break;
+                        }
+                    }
+                }
 
-            } catch (error) {
-                console.error("Error:", error);
-                grid.innerHTML = `<div class="message" style="color: #ef4444;">
-                    <strong>Error loading channels:</strong><br>
-                    ${error.message}<br><br>
-                    <em>Note: If your GitHub repository is set to 'Private', the code won't be able to read the JSON file.</em>
-                </div>`;
-                return;
+                // If no array could be found anywhere
+                if (channelsArray.length === 0) {
+                    grid.innerHTML = `
+                        <div class="debug-container">
+                            <h3 style="color:#f59e0b;">JSON Loaded, but couldn't find a list of channels!</h3>
+                            <p style="font-size:14px; margin-top:5px; color:#ccc;">Here is a preview of what the file actually contains:</p>
+                            <div class="debug-box">${JSON.stringify(rawData, null, 2)}</div>
+                        </div>`;
+                    return;
+                }
+
+                // If successful, render the cards
+                grid.innerHTML = '';
+                channelsArray.forEach(c => {
+                    const name = c.channel_name || c.name || c.title || "Unknown Channel";
+                    const logo = c.channel_logo || c.logo || c.logo_url || "https://via.placeholder.com/60?text=TV";
+                    
+                    grid.innerHTML += `
+                        <div class="card">
+                            <img src="${logo}" onerror="this.src='https://via.placeholder.com/60?text=TV'">
+                            <div class="card-title" title="${name}">${name}</div>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                // Display the exact error on screen
+                grid.innerHTML = `
+                    <div class="debug-container">
+                        <h3 style="color:#ef4444;">Failed to Load JSON File</h3>
+                        <div class="debug-box" style="color:#ef4444;">${err.message}</div>
+                        <p style="margin-top:15px; font-size:14px; color:#aaa;">
+                            <strong>Troubleshooting:</strong><br>
+                            1. Go to your GitHub Repository Settings.<br>
+                            2. Scroll down to "Danger Zone".<br>
+                            3. Ensure the repository visibility is set to <strong>Public</strong>.
+                        </p>
+                    </div>`;
             }
-
-            // Clear loading message
-            grid.innerHTML = '';
-
-            // Verify data exists
-            if (!rawData || rawData.length === 0) {
-                grid.innerHTML = '<div class="message">No channels found in JSON.</div>';
-                return;
-            }
-
-            // Render data
-            rawData.forEach(channel => {
-                const name = channel.channel_name || channel.name || channel.title || "Unknown Channel";
-                const logo = channel.channel_logo || channel.logo || channel.logo_url || "https://via.placeholder.com/80?text=TV";
-                const category = channel.channel_genre || channel.category || channel.genre || "General";
-
-                const card = document.createElement('div');
-                card.className = 'card';
-
-                card.innerHTML = `
-                    <img src="${logo}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80?text=TV'">
-                    <div class="card-title" title="${name}">${name}</div>
-                    <div class="card-category">${category}</div>
-                `;
-
-                grid.appendChild(card);
-            });
         }
 
-        // Run on load
-        fetchAndRenderChannels();
+        loadChannels();
     </script>
 </body>
 </html>
