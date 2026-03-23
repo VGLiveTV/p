@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer">
+    
     <title>VG TV - Channel Grid</title>
     <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/fav.png">
     
@@ -222,7 +224,7 @@
     <div id="dataModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <img id="modalImg" src="" alt="Channel Logo">
+                <img id="modalImg" src="" alt="Channel Logo" referrerpolicy="no-referrer">
                 <div class="modal-header-text">
                     <h2 id="modalTitle">Channel Name</h2>
                     <span id="modalCategory" class="card-badge">Category</span>
@@ -267,13 +269,11 @@
 
                 const rawData = await res.json();
                 
-                // SUPER SMART ARRAY EXTRACTION
                 let channelsList = [];
                 
                 if (Array.isArray(rawData)) {
                     channelsList = rawData;
                 } else if (typeof rawData === 'object' && rawData !== null) {
-                    // Check for nested array
                     let foundArray = false;
                     for (let key in rawData) {
                         if (Array.isArray(rawData[key])) { 
@@ -282,7 +282,6 @@
                             break; 
                         }
                     }
-                    // If no array found, treat object as a dictionary of channel objects
                     if (!foundArray) {
                         channelsList = Object.values(rawData).filter(item => typeof item === 'object' && item !== null);
                     }
@@ -294,13 +293,11 @@
                     return;
                 }
 
-                // Extract global cookie just in case
                 const globalCookie = extractGlobalCookie(rawData);
 
                 // Format Data handling explicitly spaced keys
                 const formattedChannels = channelsList.map(channel => {
                     return {
-                        // Using bracket notation for spaced keys
                         name: channel["channel name"] || channel.channel_name || channel.name || channel.title || "Unknown Channel",
                         logo: channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
                         category: channel["channel category"] || channel.channel_category || channel.category || channel.genre || "General",
@@ -335,8 +332,9 @@
             card.className = 'card';
             card.onclick = () => openModal(c);
 
+            // ADDED referrerpolicy="no-referrer" TO THE IMAGE TAG HERE
             card.innerHTML = `
-                <img src="${c.logo}" loading="lazy" onerror="this.src='https://via.placeholder.com/100?text=TV'">
+                <img src="${c.logo}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/100?text=TV'">
                 <div class="card-title" title="${c.name}">${c.name}</div>
                 <div class="card-badge">${c.category}</div>
             `;
