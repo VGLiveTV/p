@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VG TV - Channel Grid</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv/refs/heads/main/fav.png">
     
     <style>
         :root {
@@ -258,7 +259,6 @@
         // Fetch and initialize data
         async function loadChannels() {
             try {
-                // Fetch with CORS Proxy fallback just in case GitHub blocks direct browser requests
                 let res = await fetch(API_URL);
                 if (!res.ok) {
                     res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
@@ -267,43 +267,62 @@
 
                 const rawData = await res.json();
                 
-                // Smart Array Extraction: Finds the channel list whether it's the root array or nested inside an object
-                let channelsList = Array.isArray(rawData) ? rawData : [];
-                if (channelsList.length === 0 && typeof rawData === 'object') {
+                // SUPER SMART ARRAY EXTRACTION
+                let channelsList = [];
+                
+                if (Array.isArray(rawData)) {
+                    channelsList = rawData;
+                } else if (typeof rawData === 'object' && rawData !== null) {
+                    // Check for nested array
+                    let foundArray = false;
                     for (let key in rawData) {
-                        if (Array.isArray(rawData[key])) { channelsList = rawData[key]; break; }
+                        if (Array.isArray(rawData[key])) { 
+                            channelsList = rawData[key]; 
+                            foundArray = true;
+                            break; 
+                        }
+                    }
+                    // If no array found, treat object as a dictionary of channel objects
+                    if (!foundArray) {
+                        channelsList = Object.values(rawData).filter(item => typeof item === 'object' && item !== null);
                     }
                 }
 
                 if (channelsList.length === 0) {
-                    grid.innerHTML = '<div class="status-msg">No channels found in the provided JSON.</div>';
+                    grid.innerHTML = '<div class="status-msg">JSON loaded, but could not parse a valid list of channels. Check JSON format.</div>';
+                    console.log("Raw JSON:", rawData);
                     return;
                 }
 
-                // Format & Render
-                grid.innerHTML = '';
-                channelsList.forEach(channel => {
-                    // Adapt to variations in JSON keys
-                    const c = {
-                        name: channel.channel_name || channel.name || channel.title || "Unknown Channel",
-                        logo: channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
-                        category: channel.channel_category || channel.category || channel.genre || "General",
-                        url: channel.channel_url || channel.url || channel.stream_url || "N/A",
-                        keyId: channel.channel_key_id || channel.key_id || channel.keyId || channel.kid || "N/A",
-                        key: channel.channel_key || channel.key || channel.k || "N/A",
-                        cookie: channel.channel_cookie || channel.cookie || channel.__hdnea__ || extractGlobalCookie(rawData) || "N/A"
-                    };
+                // Extract global cookie just in case
+                const globalCookie = extractGlobalCookie(rawData);
 
+                // Format Data handling explicitly spaced keys
+                const formattedChannels = channelsList.map(channel => {
+                    return {
+                        // Using bracket notation for spaced keys
+                        name: channel["channel name"] || channel.channel_name || channel.name || channel.title || "Unknown Channel",
+                        logo: channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
+                        category: channel["channel category"] || channel.channel_category || channel.category || channel.genre || "General",
+                        url: channel["channel url"] || channel.channel_url || channel.url || channel.stream_url || "N/A",
+                        keyId: channel["channel key id"] || channel["key id"] || channel.channel_key_id || channel.keyId || channel.kid || "N/A",
+                        key: channel["channel key"] || channel.channel_key || channel.key || channel.k || "N/A",
+                        cookie: channel["channel cookie"] || channel.channel_cookie || channel.cookie || globalCookie || "N/A"
+                    };
+                });
+
+                // Clear Grid and Render
+                grid.innerHTML = '';
+                formattedChannels.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
                     createCard(c);
                 });
 
             } catch (err) {
                 console.error(err);
-                grid.innerHTML = `<div class="status-msg" style="color:#ef4444;">Error Loading Data: Make sure the JSON URL is correct and public.</div>`;
+                grid.innerHTML = `<div class="status-msg" style="color:#ef4444;">Error Loading Data: ${err.message}</div>`;
             }
         }
 
-        // Extracts a global __hdnea__ cookie if it's placed outside the individual channel objects
         function extractGlobalCookie(data) {
             const str = JSON.stringify(data);
             const match = str.match(/__hdnea__=[^"'\s\\]+/);
@@ -335,16 +354,17 @@
             document.getElementById('modalKey').innerText = c.key;
             document.getElementById('modalCookie').innerText = c.cookie;
 
+            const modal = document.getElementById('dataModal');
             modal.classList.add('active');
         }
 
         // Close Modal
         function closeModal() {
-            modal.classList.remove('active');
+            document.getElementById('dataModal').classList.remove('active');
         }
 
         // Click outside modal to close
-        modal.addEventListener('click', function(e) {
+        document.getElementById('dataModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
