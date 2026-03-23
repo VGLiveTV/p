@@ -191,15 +191,14 @@
             color: #e2e8f0;
             font-family: monospace;
             word-break: break-all;
-            user-select: all; /* Makes it easy to copy */
+            user-select: all; 
         }
         .data-value.cookie {
             max-height: 80px;
             overflow-y: auto;
-            color: #10b981; /* Green color to differentiate cookie */
+            color: #10b981; 
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -224,7 +223,7 @@
     <div id="dataModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <img id="modalImg" src="" alt="Channel Logo" referrerpolicy="no-referrer">
+                <img id="modalImg" src="" alt="Channel Logo">
                 <div class="modal-header-text">
                     <h2 id="modalTitle">Channel Name</h2>
                     <span id="modalCategory" class="card-badge">Category</span>
@@ -258,7 +257,6 @@
         const grid = document.getElementById('grid');
         const modal = document.getElementById('dataModal');
 
-        // Fetch and initialize data
         async function loadChannels() {
             try {
                 let res = await fetch(API_URL);
@@ -270,7 +268,6 @@
                 const rawData = await res.json();
                 
                 let channelsList = [];
-                
                 if (Array.isArray(rawData)) {
                     channelsList = rawData;
                 } else if (typeof rawData === 'object' && rawData !== null) {
@@ -289,17 +286,23 @@
 
                 if (channelsList.length === 0) {
                     grid.innerHTML = '<div class="status-msg">JSON loaded, but could not parse a valid list of channels. Check JSON format.</div>';
-                    console.log("Raw JSON:", rawData);
                     return;
                 }
 
                 const globalCookie = extractGlobalCookie(rawData);
 
-                // Format Data handling explicitly spaced keys
                 const formattedChannels = channelsList.map(channel => {
+                    // Extract the raw logo URL first
+                    let rawLogo = channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV";
+                    
+                    // PROXY FIX: If the logo is from Jio, route it through wsrv.nl to bypass the 403 Forbidden block
+                    if (rawLogo.includes('jio.com')) {
+                        rawLogo = 'https://wsrv.nl/?url=' + encodeURIComponent(rawLogo);
+                    }
+
                     return {
                         name: channel["channel name"] || channel.channel_name || channel.name || channel.title || "Unknown Channel",
-                        logo: channel["channel logo"] || channel.channel_logo || channel.logo || "https://via.placeholder.com/100?text=TV",
+                        logo: rawLogo, // <--- Using the proxied image URL here
                         category: channel["channel category"] || channel.channel_category || channel.category || channel.genre || "General",
                         url: channel["channel url"] || channel.channel_url || channel.url || channel.stream_url || "N/A",
                         keyId: channel["channel key id"] || channel["key id"] || channel.channel_key_id || channel.keyId || channel.kid || "N/A",
@@ -308,7 +311,6 @@
                     };
                 });
 
-                // Clear Grid and Render
                 grid.innerHTML = '';
                 formattedChannels.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
                     createCard(c);
@@ -326,22 +328,19 @@
             return match ? match[0] : null;
         }
 
-        // Create Grid Card
         function createCard(c) {
             const card = document.createElement('div');
             card.className = 'card';
             card.onclick = () => openModal(c);
 
-            // ADDED referrerpolicy="no-referrer" TO THE IMAGE TAG HERE
             card.innerHTML = `
-                <img src="${c.logo}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/100?text=TV'">
+                <img src="${c.logo}" loading="lazy" onerror="this.src='https://via.placeholder.com/100?text=TV'">
                 <div class="card-title" title="${c.name}">${c.name}</div>
                 <div class="card-badge">${c.category}</div>
             `;
             grid.appendChild(card);
         }
 
-        // Open Modal with Data
         function openModal(c) {
             document.getElementById('modalImg').src = c.logo;
             document.getElementById('modalTitle').innerText = c.name;
@@ -356,17 +355,14 @@
             modal.classList.add('active');
         }
 
-        // Close Modal
         function closeModal() {
             document.getElementById('dataModal').classList.remove('active');
         }
 
-        // Click outside modal to close
         document.getElementById('dataModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
-        // Initialize
         loadChannels();
     </script>
 </body>
