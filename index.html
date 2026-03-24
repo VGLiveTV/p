@@ -181,7 +181,6 @@
         @media (max-width: 1023px) { .fp-content-wrapper { flex: 1; display: flex; flex-direction: column; height: 100%; } }
 
         .fp-header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-        .fp-history-btn { background: none; border: none; color: var(--text-sub); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .fp-queue-title { font-weight: 600; color: white; letter-spacing: 0.5px; }
         .fp-close-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 5px; font-size: 1.5rem; transition: 0.2s; }
         .fp-close-btn:hover { color: white; transform: rotate(90deg); }
@@ -192,25 +191,6 @@
 
         .fp-art-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .fp-art { width: 100%; max-width: 350px; aspect-ratio: 1; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.4); object-fit: cover; }
-
-        @media (max-width: 767px) {
-            .fp-body { display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; gap: 15px; overflow-y: scroll; }
-            .fp-art-container { flex: 0 0 auto; margin-bottom: 5px; }
-            .fp-art { max-width: 220px; } 
-            .fp-info-container { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 10px; }
-            .fp-song-title { font-size: 1.2rem; margin-bottom: 4px; text-align: center; line-height: 1.2; }
-            .fp-artist-list { font-size: 0.9rem; margin-bottom: 12px; justify-content: center; }
-            .fp-artist-link { color: var(--text-sub); }
-            .fp-progress-area { width: 100%; margin-bottom: 12px; }
-            .fp-time-display { font-size: 0.75rem; }
-            .fp-main-controls { margin-bottom: 15px; gap: 20px; }
-            .fp-btn-ctrl { padding: 5px; }
-            .fp-btn-ctrl i { font-size: 1.5rem; }
-            .fp-btn-play { width: 56px; height: 56px; }
-            .fp-btn-play i { font-size: 1.5rem; }
-            .fp-actions { width: 100%; justify-content: center; padding-top: 10px; }
-            .fp-action-right { gap: 15px; }
-        }
 
         .fp-info-container { display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; width: 100%; }
 
@@ -317,21 +297,11 @@
         .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(255,255,255,0.95); color: #000; padding: 12px 24px; border-radius: 30px; z-index: 1000; font-size: 0.9rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .album-row { display: flex; align-items: center; padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .album-row:hover { background: rgba(255,255,255,0.05); }
-        .album-num { color: var(--text-sub); width: 30px; text-align: center; font-size: 0.9rem; }
-        .album-art-list { width: 45px; height: 45px; border-radius: 4px; margin-right: 15px; object-fit: cover; }
-        .album-meta { flex: 1; }
-        .album-song-title { color: white; font-weight: 500; font-size: 1rem; display: flex; align-items: center; gap: 8px;}
-        .album-song-artist { color: var(--text-sub); font-size: 0.85rem; margin-top: 2px; }
-        .album-play-icon { color: var(--primary); font-size: 1.5rem; opacity: 0; transition: 0.2s; }
-        .album-row:hover .album-play-icon { opacity: 1; }
-
         /* --- MOBILE RESPONSIVENESS ENHANCEMENTS --- */
         @media (max-width: 650px) {
             header { padding: 15px 0; }
-            .logo span { display: none; } 
-            .logo i { font-size: 1.8rem; }
+            .logo { font-size: 1.1rem; } /* Text is visible and slightly scaled down to fit */
+            .logo i { font-size: 1.4rem; }
             .header-right { gap: 10px; }
             .lang-btn { padding: 6px 10px; font-size: 0.8rem; }
             .lang-menu { width: 280px; right: -10px; }
@@ -444,11 +414,7 @@
     <div class="full-player-overlay" id="fullPlayer">
         <div class="fp-content-wrapper">
             <div class="fp-header">
-                <button class="fp-history-btn" onclick="showToast('History feature coming soon')">
-                    <i class="ri-history-line"></i>
-                    <span>History</span>
-                </button>
-                <div class="fp-queue-title">Now Playing</div>
+                <div style="width: 24px;"></div> <div class="fp-queue-title">Now Playing</div>
                 <button class="fp-close-btn" onclick="toggleFullPlayer(false)">
                     <i class="ri-close-line"></i>
                 </button>
