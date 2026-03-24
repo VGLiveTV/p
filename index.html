@@ -163,7 +163,6 @@
         @media (max-width: 1023px) { .fp-content-wrapper { flex: 1; display: flex; flex-direction: column; height: 100%; } }
 
         .fp-header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-        .fp-history-btn { background: none; border: none; color: var(--text-sub); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .fp-queue-title { font-weight: 600; color: white; letter-spacing: 0.5px; }
         .fp-close-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 5px; font-size: 1.5rem; transition: 0.2s; }
         .fp-close-btn:hover { color: white; transform: rotate(90deg); }
@@ -398,11 +397,7 @@
     <div class="full-player-overlay" id="fullPlayer">
         <div class="fp-content-wrapper">
             <div class="fp-header">
-                <button class="fp-history-btn" onclick="showToast('History feature coming soon')">
-                    <i class="ri-history-line"></i>
-                    <span>History</span>
-                </button>
-                <div class="fp-queue-title">Now Playing</div>
+                <div></div> <div class="fp-queue-title">Now Playing</div>
                 <button class="fp-close-btn" onclick="toggleFullPlayer(false)">
                     <i class="ri-close-line"></i>
                 </button>
