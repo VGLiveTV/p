@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VG Music</title>
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300B597'><path d='M12 13.535V3h8v3h-6v11a4 4 0 1 1-2-3.465z'/></svg>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
@@ -55,20 +57,6 @@
         .logo i { font-size: 1.6rem; color: var(--primary); -webkit-text-fill-color: initial; background: none; }
         .header-right { display: flex; align-items: center; gap: 15px; }
 
-        .playlist-header-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-sub);
-            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s ease; position: relative; font-size: 1.2rem;
-        }
-        .playlist-header-btn:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
-        .playlist-header-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 181, 151, 0.4); }
-
-        .playlist-count {
-            position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 700;
-            min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            padding: 0 4px; border: 2px solid var(--bg-main); display: none; 
-        }
-
         .lang-dropdown { position: relative; }
         .lang-btn {
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
@@ -86,16 +74,34 @@
         .lang-item:hover, .lang-item.active { background: var(--primary); color: white; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .search-container { padding: 20px 0; }
+        .search-container { padding: 20px 0; position: relative; z-index: 90; }
         .search-box { position: relative; max-width: 600px; margin: 0 auto; }
         .search-input {
             width: 100%; padding: 14px 20px 14px 50px; border-radius: 50px; border: 1px solid var(--border);
             background: var(--bg-card); color: white; font-size: 1rem; outline: none; transition: 0.3s;
         }
-        .search-input:focus { border-color: var(--primary); background: #202025; box-shadow: 0 0 0 3px rgba(0, 181, 151, 0.1); }
+        .search-input:focus { border-color: var(--primary); background: #202025; box-shadow: 0 0 0 3px rgba(0, 181, 151, 0.1); border-radius: 25px 25px 25px 25px; } 
         .search-icon-wrapper { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; }
 
-        main { padding: 0; }
+        /* --- RECENT SEARCHES UI --- */
+        .recent-searches {
+            position: absolute; top: calc(100% + 8px); left: 0; width: 100%; 
+            background: #18181B; border: 1px solid var(--border); border-radius: 16px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7); display: none; flex-direction: column; overflow: hidden; z-index: 150;
+        }
+        .recent-searches.show { display: flex; animation: slideDown 0.2s ease; }
+        .recent-header { padding: 12px 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-sub); display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .recent-clear { cursor: pointer; color: var(--primary); transition: 0.2s; }
+        .recent-clear:hover { color: white; }
+        .recent-item { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; color: #e2e8f0; }
+        .recent-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .recent-item-text { display: flex; align-items: center; gap: 12px; flex: 1; font-size: 0.95rem; }
+        .recent-item-text i { color: var(--text-sub); font-size: 1.1rem; }
+        .recent-remove { color: var(--text-sub); display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .recent-remove:hover { color: #ef4444; background: rgba(239,68,68,0.15); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        main { padding: 0; position: relative; z-index: 10; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 20px 0; }
         .section-title { font-size: 1.5rem; font-weight: 700; }
         .section-link { font-size: 0.9rem; color: var(--primary); text-decoration: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
@@ -131,9 +137,6 @@
         .card-menu-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; cursor: pointer; z-index: 10; font-size: 1.2rem; }
         .card:hover .card-menu-btn { opacity: 1; }
         .card-menu-btn:hover { background: white; color: black; }
-
-        .playlist-remove-btn { position: absolute; top: 8px; right: 8px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; z-index: 20; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4); }
-        .playlist-remove-btn:hover { background: #ef4444; transform: scale(1.1); }
 
         .context-menu { position: fixed; background: #2A2A2E; border-radius: 8px; padding: 5px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; display: none; width: 200px; border: 1px solid var(--border); }
         .context-menu.active { display: block; animation: fadeIn 0.1s ease; }
@@ -190,19 +193,24 @@
         .fp-art-container { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .fp-art { width: 100%; max-width: 350px; aspect-ratio: 1; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.4); object-fit: cover; }
 
-        .fp-video-container { display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; }
-        
-        .fp-video-wrapper { width: 100%; max-width: 350px; aspect-ratio: 16/9; background: black; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.5); position: relative; display: flex; align-items: center; justify-content: center; }
-
-        .fp-iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 5; }
-
-        .video-loading { position: absolute; z-index: 2; color: var(--primary); animation: spin 1s linear infinite; }
-        .video-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); z-index: 10; text-align: center; padding: 20px; }
-        .video-fallback h3 { color: white; margin-bottom: 10px; font-size: 1.1rem; }
-        .video-fallback p { color: #ccc; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.4; }
-
-        .btn-watch-yt { background: #ff0000; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s; font-size: 1rem; }
-        .btn-watch-yt:hover { transform: scale(1.05); background: #cc0000; }
+        @media (max-width: 767px) {
+            .fp-body { display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; gap: 15px; overflow-y: scroll; }
+            .fp-art-container { flex: 0 0 auto; margin-bottom: 5px; }
+            .fp-art { max-width: 220px; } 
+            .fp-info-container { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 10px; }
+            .fp-song-title { font-size: 1.2rem; margin-bottom: 4px; text-align: center; line-height: 1.2; }
+            .fp-artist-list { font-size: 0.9rem; margin-bottom: 12px; justify-content: center; }
+            .fp-artist-link { color: var(--text-sub); }
+            .fp-progress-area { width: 100%; margin-bottom: 12px; }
+            .fp-time-display { font-size: 0.75rem; }
+            .fp-main-controls { margin-bottom: 15px; gap: 20px; }
+            .fp-btn-ctrl { padding: 5px; }
+            .fp-btn-ctrl i { font-size: 1.5rem; }
+            .fp-btn-play { width: 56px; height: 56px; }
+            .fp-btn-play i { font-size: 1.5rem; }
+            .fp-actions { width: 100%; justify-content: center; padding-top: 10px; } /* Centered actions since left side removed */
+            .fp-action-right { gap: 15px; }
+        }
 
         .fp-info-container { display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; width: 100%; }
 
@@ -230,17 +238,14 @@
         .fp-btn-ctrl:hover { color: white; transform: scale(1.1); }
         .fp-btn-ctrl i { font-size: 1.8rem; }
         @media (min-width: 768px) { .fp-btn-ctrl i { font-size: 2rem; } }
-        
-        .btn-youtube { color: #ff0000 !important;  }
-        .btn-youtube.active { color: white !important; text-shadow: 0 0 10px #ff0000; }
 
         .fp-btn-play { width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 50%; box-shadow: 0 0 20px rgba(0, 181, 151, 0.4); z-index: 60; position: relative; padding: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .fp-btn-play:hover { transform: scale(1.05); background: var(--primary-dark); }
         .fp-btn-play i { font-size: 1.8rem; margin-left: 4px; } 
         .fp-btn-play.is-playing i { margin-left: 0; }
         
-        .fp-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; position: relative; z-index: 50; }
-        .fp-action-left, .fp-action-right { display: flex; align-items: center; gap: 20px; }
+        .fp-actions { display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; position: relative; z-index: 50; }
+        .fp-action-right { display: flex; align-items: center; gap: 20px; }
         
         .volume-container { display: flex; align-items: center; gap: 10px; }
         .volume-slider { width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; -webkit-appearance: none; outline: none; cursor: pointer; }
@@ -322,15 +327,10 @@
         .album-play-icon { color: var(--primary); font-size: 1.5rem; opacity: 0; transition: 0.2s; }
         .album-row:hover .album-play-icon { opacity: 1; }
 
-        .playlist-view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-        .playlist-view-header h2 { color: white; }
-        .clear-playlist { color: var(--text-sub); font-size: 0.9rem; cursor: pointer; padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; }
-        .clear-playlist:hover { color: #ff4757; border-color: #ff4757; }
-
         /* --- MOBILE RESPONSIVENESS ENHANCEMENTS --- */
         @media (max-width: 650px) {
             header { padding: 15px 0; }
-            .logo span { display: none; } /* Hide 'VG Music' text on very small screens to save space */
+            .logo span { display: none; } 
             .logo i { font-size: 1.8rem; }
             .header-right { gap: 10px; }
             .lang-btn { padding: 6px 10px; font-size: 0.8rem; }
@@ -351,8 +351,8 @@
             .m-hide { display: none !important; }
             .mini-controls { gap: 10px; }
             
-            .volume-container { display: none !important; } /* Hide volume on mobile (physical buttons used) */
-            .fp-action-left, .fp-action-right { gap: 10px; }
+            .volume-container { display: none !important; }
+            .fp-action-right { gap: 15px; }
             .fp-btn-ctrl i { font-size: 1.4rem; }
             
             .toast { width: 90%; bottom: 85px; font-size: 0.85rem; padding: 10px; text-align: center; }
@@ -380,11 +380,6 @@
             </div>
 
             <div class="header-right">
-                <div class="playlist-header-btn" id="playlistHeaderBtn" title="My Playlist">
-                    <i class="ri-play-list-add-line"></i>
-                    <span class="playlist-count" id="playlistCount">0</span>
-                </div>
-
                 <div class="lang-dropdown">
                     <div class="lang-btn" id="langBtn" onclick="toggleLangMenu()">
                         <span id="currentLang">All Languages</span>
@@ -399,9 +394,10 @@
         </header>
 
         <div class="search-container">
-            <div class="search-box">
+            <div class="search-box" id="searchBoxContainer">
                 <div class="search-icon-wrapper"><i class="ri-search-line"></i></div>
-                <input type="text" class="search-input" id="searchInput" placeholder="Search songs, artists, albums...">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search songs, artists, albums..." autocomplete="off">
+                <div class="recent-searches" id="recentSearches"></div>
             </div>
         </div>
 
@@ -463,20 +459,6 @@
                     <img src="" class="fp-art" id="fpArtBig" alt="">
                 </div>
 
-                <div class="fp-video-container" id="fpVideoContainer">
-                    <div class="fp-video-wrapper">
-                        <i id="videoLoader" class="ri-loader-4-line video-loading" style="font-size: 2rem; display: none;"></i>
-                        <iframe id="ytPlayer" class="fp-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-                        <div id="videoFallback" class="video-fallback hidden">
-                            <h3>Video Unavailable</h3>
-                            <p id="fallbackText">Could not load video automatically.</p>
-                            <a href="#" target="_blank" id="videoSearchLink" class="btn-watch-yt">
-                                <i class="ri-youtube-fill"></i> Search on YouTube
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="fp-info-container">
                     <div class="fp-song-title" id="fpTitle">Song Title</div>
                     <div class="fp-artist-list" id="fpArtistList">
@@ -515,18 +497,7 @@
                     </div>
 
                     <div class="fp-actions">
-                        <div class="fp-action-left">
-                            <button class="fp-btn-ctrl btn-youtube" id="btnYoutube" title="Watch Video" onclick="toggleVideoMode()">
-                                <i class="ri-youtube-fill" style="font-size: 1.8rem;"></i>
-                            </button>
-                            <button class="fp-btn-ctrl" title="Add to Playlist" id="addPlaylistBtn" onclick="toggleCurrentSongInPlaylist()">
-                                <i class="ri-play-list-add-line" style="font-size: 1.5rem;"></i>
-                            </button>
-                            <button class="fp-btn-ctrl" title="Like" onclick="toggleLike(this)">
-                                <i class="ri-heart-line" style="font-size: 1.5rem;"></i>
-                            </button>
-                        </div>
-                        <div class="fp-action-right">
+                        <div class="fp-action-right" style="width: 100%; justify-content: center;">
                             <div class="volume-container">
                                 <button class="fp-btn-ctrl" id="muteBtn" onclick="toggleMute()">
                                     <i class="ri-volume-up-line" style="font-size: 1.5rem;"></i>
@@ -589,14 +560,12 @@
         let isPlaying = false;
         let isShuffle = false;
         let isRepeat = false;
-        let isVideoMode = false;
         let lyricsData = []; 
         let lyricsType = 'none'; 
         let currentLyricsLang = 'all'; 
         let currentSongObj = null; 
         let originalPlainLyrics = ""; 
-        let myPlaylist = JSON.parse(localStorage.getItem('vt_music_playlist')) || [];
-        let isViewingPlaylist = false;
+        let recentSearchesList = JSON.parse(localStorage.getItem('vg_recent_searches')) || [];
         let contextMenuTargetSong = null;
         let contextMenuSourceList = null;
 
@@ -628,14 +597,9 @@
         const queueListContainer = document.getElementById('queueListContainer');
         const fpQueueSection = document.getElementById('fpQueueSection');
         const fpArtContainer = document.getElementById('fpArtContainer');
-        const fpVideoContainer = document.getElementById('fpVideoContainer');
-        const ytPlayer = document.getElementById('ytPlayer');
-        const btnYoutube = document.getElementById('btnYoutube');
-        const videoFallback = document.getElementById('videoFallback');
-        const videoSearchLink = document.getElementById('videoSearchLink');
-        const fallbackText = document.getElementById('fallbackText');
-        const videoLoader = document.getElementById('videoLoader');
         const searchInput = document.getElementById('searchInput');
+        const searchBoxContainer = document.getElementById('searchBoxContainer');
+        const recentSearchesContainer = document.getElementById('recentSearches');
         const lyricsModal = document.getElementById('lyricsModal');
         const lyricsContent = document.getElementById('lyricsContent');
         const langMenu = document.getElementById('langMenu');
@@ -646,9 +610,6 @@
         const lyricsLangBtn = document.getElementById('lyricsLangBtn');
         const lyricsLangMenu = document.getElementById('lyricsLangMenu');
         const currentLyricsLangSpan = document.getElementById('currentLyricsLang');
-        const playlistHeaderBtn = document.getElementById('playlistHeaderBtn');
-        const playlistCount = document.getElementById('playlistCount');
-        const addPlaylistBtn = document.getElementById('addPlaylistBtn');
 
         document.addEventListener('DOMContentLoaded', () => {
             initLanguages();
@@ -656,175 +617,79 @@
             loadHome();
             setupEventListeners();
             setupSwipeGesture();
-            updatePlaylistCount();
-            updatePlaylistBtnState(); 
         });
 
-        const API_INSTANCES = [
-            { type: 'piped', url: 'https://pipedapi.kavin.rocks' },
-            { type: 'piped', url: 'https://piped-api.garudalinux.org' },
-            { type: 'piped', url: 'https://api.piped.io' },
-            { type: 'invidious', url: 'https://invidious.snopyta.org' },
-            { type: 'invidious', url: 'https://invidious.kavin.rocks' },
-            { type: 'invidious', url: 'https://inv.riverside.rocks' },
-            { type: 'invidious', url: 'https://yewtu.be' },
-            { type: 'invidious', url: 'https://invidious.nerdvpn.de' },
-            { type: 'invidious', url: 'https://invidious.fdn.fr' },
-            { type: 'invidious', url: 'https://vid.puffyan.us' }
-        ];
+        // --- RECENT SEARCHES LOGIC ---
+        function renderRecentSearches() {
+            if (recentSearchesList.length === 0) {
+                recentSearchesContainer.classList.remove('show');
+                return;
+            }
+            let html = `
+                <div class="recent-header">
+                    <span>Recent Searches</span>
+                    <span class="recent-clear" onclick="clearRecentSearches(event)">Clear All</span>
+                </div>
+            `;
+            recentSearchesList.forEach((query, index) => {
+                html += `
+                    <div class="recent-item" onclick="executeRecentSearch('${query.replace(/'/g, "\\'")}')">
+                        <div class="recent-item-text">
+                            <i class="ri-history-line"></i>
+                            <span>${query}</span>
+                        </div>
+                        <div class="recent-remove" onclick="removeRecentSearch(${index}, event)">
+                            <i class="ri-close-line"></i>
+                        </div>
+                    </div>
+                `;
+            });
+            recentSearchesContainer.innerHTML = html;
+            
+            if (document.activeElement === searchInput && !searchInput.value.trim()) {
+                recentSearchesContainer.classList.add('show');
+            }
+        }
 
-        const fetchWithTimeout = async (resource, options = {}, timeout = 3000) => {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            const response = await fetch(resource, { ...options, signal: controller.signal });
-            clearTimeout(id);
-            return response;
+        function saveRecentSearch(query) {
+            if (!query) return;
+            recentSearchesList = recentSearchesList.filter(q => q.toLowerCase() !== query.toLowerCase());
+            recentSearchesList.unshift(query);
+            if (recentSearchesList.length > 6) recentSearchesList.pop(); // Keep max 6
+            localStorage.setItem('vg_recent_searches', JSON.stringify(recentSearchesList));
+        }
+
+        window.removeRecentSearch = function(index, event) {
+            event.stopPropagation();
+            recentSearchesList.splice(index, 1);
+            localStorage.setItem('vg_recent_searches', JSON.stringify(recentSearchesList));
+            renderRecentSearches();
+            searchInput.focus();
         };
 
-        async function getVideoId(query) {
-            const encodedQuery = encodeURIComponent(query);
-            for (const api of API_INSTANCES) {
-                try {
-                    let apiUrl = '', parser = null;
-                    if (api.type === 'piped') {
-                        apiUrl = `${api.url}/search?q=${encodedQuery}&filter=music_songs`;
-                        parser = (data) => {
-                            if (data.items && data.items.length > 0) {
-                                const match = data.items[0].url.match(/v=([^&]+)/);
-                                return match ? match[1] : null;
-                            }
-                            return null;
-                        };
-                    } else if (api.type === 'invidious') {
-                        apiUrl = `${api.url}/api/v1/search?q=${encodedQuery}`;
-                        parser = (data) => {
-                            if (Array.isArray(data) && data.length > 0) return data[0].videoId;
-                            return null;
-                        };
-                    }
-                    if (!parser) continue;
-                    const response = await fetchWithTimeout(apiUrl);
-                    if (!response.ok) continue;
-                    const data = await response.json();
-                    const videoId = parser(data);
-                    if (videoId) return videoId;
-                } catch (error) { continue; }
-            }
-            return null;
-        }
+        window.clearRecentSearches = function(event) {
+            event.stopPropagation();
+            recentSearchesList = [];
+            localStorage.setItem('vg_recent_searches', JSON.stringify(recentSearchesList));
+            renderRecentSearches();
+        };
 
-        async function toggleVideoMode() {
-            if (!currentSongObj) return;
-            isVideoMode = !isVideoMode;
-            if (isVideoMode) {
-                fpArtContainer.style.display = 'none'; fpVideoContainer.style.display = 'flex';
-                btnYoutube.classList.add('active'); if(isPlaying) audio.pause();
-                videoLoader.style.display = 'block'; ytPlayer.src = ""; videoFallback.classList.add('hidden');
-                const query = `${currentSongObj.artist} ${currentSongObj.title} official video`;
-                const videoId = await getVideoId(query);
-                videoLoader.style.display = 'none';
-                if (videoId) { ytPlayer.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`; }
-                else {
-                    fallbackText.textContent = "All services busy. Searching YouTube...";
-                    videoSearchLink.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-                    videoFallback.classList.remove('hidden');
-                }
-            } else {
-                fpArtContainer.style.display = 'flex'; fpVideoContainer.style.display = 'none';
-                btnYoutube.classList.remove('active'); ytPlayer.src = "";
-                if(isPlaying) audio.play();
+        window.executeRecentSearch = function(query) {
+            searchInput.value = query;
+            recentSearchesContainer.classList.remove('show');
+            searchInput.dispatchEvent(new Event('input')); 
+        };
+
+        searchInput.addEventListener('focus', () => {
+            if (recentSearchesList.length > 0 && !searchInput.value.trim()) {
+                renderRecentSearches();
             }
-        }
+        });
+        // --------------------------------
 
         function toggleQueueMobile(e) {
             if(e) e.stopPropagation();
             fpQueueSection.classList.toggle('expanded');
-        }
-
-        function updatePlaylistCount() {
-            playlistCount.textContent = myPlaylist.length;
-            playlistCount.style.display = myPlaylist.length > 0 ? 'flex' : 'none';
-        }
-
-        function toggleCurrentSongInPlaylist() {
-            if (!currentSongObj) return;
-            const index = myPlaylist.findIndex(s => s.id === currentSongObj.id);
-            if (index === -1) {
-                myPlaylist.push(currentSongObj);
-                showToast("Added to Playlist");
-                addPlaylistBtn.style.color = 'var(--primary)';
-            } else {
-                myPlaylist.splice(index, 1);
-                showToast("Removed from Playlist");
-                addPlaylistBtn.style.color = ''; 
-            }
-            localStorage.setItem('vt_music_playlist', JSON.stringify(myPlaylist));
-            updatePlaylistCount();
-            updatePlaylistBtnState();
-            if (isViewingPlaylist) renderMyPlaylist();
-        }
-
-        function updatePlaylistBtnState() {
-            if (!currentSongObj) return;
-            const isSaved = myPlaylist.some(s => s.id === currentSongObj.id);
-            addPlaylistBtn.style.color = isSaved ? 'var(--primary)' : '';
-        }
-
-        window.removeFromMyPlaylist = function(id, event) {
-            if (event) event.stopPropagation(); 
-            myPlaylist = myPlaylist.filter(s => s.id !== id);
-            localStorage.setItem('vt_music_playlist', JSON.stringify(myPlaylist));
-            updatePlaylistCount();
-            if (currentSongObj && currentSongObj.id === id) updatePlaylistBtnState();
-            renderMyPlaylist();
-            showToast("Removed from Playlist");
-        }
-
-        playlistHeaderBtn.addEventListener('click', () => {
-            isViewingPlaylist = !isViewingPlaylist;
-            if (isViewingPlaylist) {
-                playlistHeaderBtn.classList.add('active');
-                renderMyPlaylist();
-            } else {
-                playlistHeaderBtn.classList.remove('active');
-                loadHome();
-            }
-        });
-
-        function renderMyPlaylist() {
-            if (myPlaylist.length === 0) {
-                mainContent.innerHTML = `
-                    <div class="playlist-view-header">
-                        <h2>My Playlist</h2>
-                    </div>
-                    <div style="text-align:center; padding: 60px 20px; color: var(--text-sub);">
-                        <i class="ri-play-list-add-line" style="font-size: 3rem; margin-bottom: 20px; display:block; opacity:0.5;"></i>
-                        <p>Your playlist is empty.</p>
-                    </div>
-                `;
-                return;
-            }
-            let html = `
-                <div class="playlist-view-header">
-                    <h2>My Playlist (${myPlaylist.length})</h2>
-                    <div class="clear-playlist" onclick="clearMyPlaylist()">Clear All</div>
-                </div>
-                <div class="scroll-container" id="myPlaylistGrid" style="overflow-x: hidden; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
-            `;
-            mainContent.innerHTML = html;
-            const container = document.getElementById('myPlaylistGrid');
-            renderCards(myPlaylist, container, 'song', true);
-        }
-
-        function clearMyPlaylist() {
-            if(confirm("Clear entire playlist?")) {
-                myPlaylist = [];
-                localStorage.setItem('vt_music_playlist', JSON.stringify(myPlaylist));
-                updatePlaylistCount();
-                renderMyPlaylist();
-                updatePlaylistBtnState();
-                showToast("Playlist Cleared");
-            }
         }
 
         function handleSectionClick(type, query) {
@@ -860,19 +725,6 @@
             toastEl.textContent = msg;
             toastEl.classList.add('show');
             setTimeout(() => toastEl.classList.remove('show'), 3000);
-        }
-
-        function toggleLike(btn) {
-            const icon = btn.querySelector('i');
-            if (icon.classList.contains('ri-heart-line')) {
-                icon.classList.replace('ri-heart-line', 'ri-heart-fill');
-                icon.style.color = '#00B597';
-                showToast("Added to Liked Songs");
-            } else {
-                icon.classList.replace('ri-heart-fill', 'ri-heart-line');
-                icon.style.color = '';
-                showToast("Removed from Liked Songs");
-            }
         }
 
         async function fetchSongs(query, limit = 10, useLanguage = true) {
@@ -918,8 +770,6 @@
         }
 
         async function loadHome() {
-            isViewingPlaylist = false;
-            playlistHeaderBtn.classList.remove('active');
             mainContent.innerHTML = '<div style="text-align:center; padding:50px;"><div class="spinner"></div></div>';
             const currentYear = new Date().getFullYear();
             let sections = [
@@ -962,16 +812,14 @@
             }
         }
 
-        function renderCards(items, container, type = 'song', isPlaylistView = false) {
+        function renderCards(items, container, type = 'song') {
             if (!items || items.length === 0) { container.innerHTML = '<div style="color:#666; font-size:0.9rem; padding:10px;">No results.</div>'; return; }
             container.innerHTML = '';
             items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 const subtitle = type === 'album' ? (item.artist + (item.songCount ? ` • ${item.songCount} Songs` : '')) : item.artist;
-                let extraButtons = isPlaylistView 
-                    ? `<button class="playlist-remove-btn" onclick="removeFromMyPlaylist('${item.id}', event)"><i class="ri-close-line"></i></button>`
-                    : `<button class="card-menu-btn" onclick="openContextMenu(event, '${type}')"><i class="ri-more-2-fill"></i></button>`;
+                let extraButtons = `<button class="card-menu-btn" onclick="openContextMenu(event, '${type}')"><i class="ri-more-2-fill"></i></button>`;
 
                 card.innerHTML = `
                     <div class="card-img-wrapper"><img src="${item.image}" class="card-img" loading="lazy" alt="${item.title}">${extraButtons}<div class="play-overlay"><div class="play-btn"><i class="ri-play-fill"></i></div></div></div>
@@ -981,7 +829,7 @@
                 card.dataset.list = JSON.stringify(items);
                 card.dataset.type = type;
                 card.onclick = (e) => {
-                    if(!e.target.closest('.card-menu-btn') && !e.target.closest('.playlist-remove-btn')) {
+                    if(!e.target.closest('.card-menu-btn')) {
                         if (type === 'album') { showToast("Loading Album..."); loadAlbumById(item.id); }
                         else { playSong(item, items); }
                     }
@@ -1060,12 +908,10 @@
         }
 
         function playSong(song, playlist) {
-            if(isVideoMode) toggleVideoMode();
             currentPlaylist = playlist;
             currentIndex = playlist.findIndex(s => s.id === song.id);
             if (currentIndex === -1) currentIndex = 0;
             currentSongObj = song;
-            updatePlaylistBtnState();
             updatePlayerUI(song);
             if (song.url) {
                 audio.src = song.url;
@@ -1141,12 +987,23 @@
             progressBar.addEventListener('click', (e) => { const rect = progressBar.getBoundingClientRect(); audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; });
             fpProgressTrack.addEventListener('click', (e) => { const rect = fpProgressTrack.getBoundingClientRect(); audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; });
             volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; updateVolumeIcon(); });
+            
             let debounceTimer;
             searchInput.addEventListener('input', async (e) => {
+                const val = e.target.value.trim();
+                
+                // Hide recent searches if actively typing
+                if (val.length > 0) {
+                    recentSearchesContainer.classList.remove('show');
+                } else {
+                    renderRecentSearches();
+                }
+
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(async () => {
-                    const val = e.target.value.trim();
                     if (val.length > 2) {
+                        saveRecentSearch(val); 
+                        
                         mainContent.innerHTML = `<div style="text-align:center; padding:60px;"><div class="spinner"></div></div>`;
                         const songs = await fetchSongs(val, 20, false); const albums = await fetchAlbums(val, 5, false);
                         let html = `<div class="section-header"><h2 class="section-title">Search Results</h2><button class="section-link" onclick="loadHome()" style="background:none; border:none; cursor:pointer; color:white;">Clear</button></div>`;
@@ -1158,12 +1015,16 @@
                     } else if (val.length === 0) loadHome();
                 }, 500);
             });
+
             document.addEventListener('click', (e) => {
                 if (!langMenu.contains(e.target) && !langBtn.contains(e.target)) langMenu.classList.remove('open');
                 if (!contextMenu.contains(e.target) && !e.target.closest('.card-menu-btn')) contextMenu.classList.remove('active');
                 if (!lyricsLangMenu.contains(e.target) && !lyricsLangBtn.contains(e.target)) lyricsLangMenu.classList.remove('show');
+                // Close recent searches if clicked outside
+                if (!searchBoxContainer.contains(e.target)) recentSearchesContainer.classList.remove('show');
             });
         }
+        
         function updateVolumeIcon() {
             const btn = document.getElementById('muteBtn'), icon = btn.querySelector('i');
             icon.className = '';
