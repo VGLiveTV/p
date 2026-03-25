@@ -38,7 +38,24 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         
-        .nav-logo { height: 35px; object-fit: contain; }
+        /* New logo container and text styles */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .logo-container:hover {
+            opacity: 0.8;
+        }
+        .logo-container img { height: 35px; object-fit: contain; }
+        .logo-container span {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 20px;
+            white-space: nowrap;
+        }
 
         #searchInput { flex: 1; min-width: 150px; }
 
@@ -148,8 +165,12 @@
                 padding: 12px 10px; 
                 gap: 10px;
             }
-            .nav-logo { 
-                height: 42px; 
+            /* Adjust sizes for mobile */
+            .logo-container img { 
+                height: 38px; 
+            }
+            .logo-container span {
+                font-size: 18px; 
             }
             #searchInput { 
                 width: 100%; 
@@ -180,7 +201,10 @@
 <body>
 
     <div class="nav">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23e50914' d='M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z'/%3E%3C/svg%3E" alt="VG TV Logo" class="nav-logo">
+        <div class="logo-container" onclick="window.location.reload();">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23e50914' d='M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z'/%3E%3C/svg%3E" alt="VG TV Logo">
+            <span>VG TV</span>
+        </div>
         
         <input type="text" id="searchInput" placeholder="Search channels...">
         
@@ -450,7 +474,7 @@
       const videoEl = document.getElementById('video');
       const container = document.getElementById('player-container');
 
-      const player = new shaka.Player(videoEl);
+      const player = new Shaka.Player(videoEl);
       const ui = new shaka.ui.Overlay(player, container, videoEl);
 
       ui.configure({
