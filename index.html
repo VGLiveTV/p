@@ -1,537 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VG TV</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23e50914' d='M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z'/%3E%3C/svg%3E">
-    
-    <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --card-border: #334155;
-            --accent: #e50914;
-            --text: #f8fafc;
-            --sub-text: #94a3b8;
-        }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Prime TV • 2026</title>
+<meta name="referrer" content="no-referrer">
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FMP9REY96D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-        /* --- Navbar & Filters (Desktop) --- */
-        .nav { 
-            padding: 15px 20px; 
-            background: #0b1120; 
-            border-bottom: 2px solid var(--accent); 
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
-            flex-wrap: wrap;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        
-        /* Logo container and text styles */
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logo-container img { height: 35px; object-fit: contain; }
-        .logo-container span {
-            color: var(--accent);
-            font-weight: 700;
-            font-size: 20px;
-            white-space: nowrap;
-        }
+  gtag('config', 'G-FMP9REY96D');
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,sans-serif}
 
-        #searchInput { flex: 1; min-width: 150px; }
+.shaka-video-container{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 
-        .filter-group { 
-            display: flex; 
-            gap: 10px; 
-            flex: 1;
-            min-width: 250px;
-        }
+video{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#000;
+}
 
-        select, input { 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid var(--card-border); 
-            background: #000; 
-            color: #fff; 
-            outline: none; 
-            font-size: 14px; 
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        
-        select { flex: 1; width: 100%; }
-        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(229, 9, 20, 0.4); }
 
-        /* --- Grid Layout --- */
-        .grid { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-            gap: 15px; 
-            align-content: start;
-        }
+.shaka-volume-bar-container,
+.shaka-spinner-container{display:none!important}
 
-        .card { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 10px; 
-            text-align: center; 
-            border: 1px solid var(--card-border); 
-            cursor: pointer;
-            transition: all 0.2s ease; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .card:hover { 
-            border-color: var(--accent); 
-            transform: translateY(-4px); 
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
-        }
+/* WATERMARK */
+.custom-watermark{
+    position:absolute;
+    z-index:40;
+    pointer-events:none;
+    top:65%;
+    left:6%;
+    transform:translateY(-50%);
+    font-size:11px;
+    font-weight:600;
+    color:rgba(255,255,255,0.15);
+}
 
-        .card img { 
-            width: 70px; 
-            height: 70px; 
-            object-fit: contain; 
-            background: #fff; 
-            border-radius: 8px; 
-            padding: 5px; 
-            margin-bottom: 12px; 
-        }
-
-        .card-title { 
-            font-size: 14px; 
-            font-weight: bold; 
-            width: 100%;
-            overflow: hidden; 
-            white-space: nowrap; 
-            text-overflow: ellipsis; 
-            margin-bottom: 8px;
-        }
-
-        .card-badges {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            font-size: 10px;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.05);
-            color: var(--sub-text);
-        }
-        .badge.category { border-left: 2px solid var(--accent); }
-        .badge.language { border-left: 2px solid #3b82f6; }
-
-        .status-msg { grid-column: 1/-1; text-align: center; color: var(--sub-text); margin-top: 50px; font-size: 16px; }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 650px) {
-            .nav { 
-                display: grid;
-                grid-template-columns: auto 1fr; 
-                padding: 12px 10px; 
-                gap: 10px;
-            }
-            /* Adjust sizes for mobile */
-            .logo-container img { 
-                height: 38px; 
-            }
-            .logo-container span {
-                font-size: 18px; 
-            }
-            #searchInput { 
-                width: 100%; 
-                font-size: 15px; 
-                padding: 10px 12px; 
-            }
-            .filter-group { 
-                grid-column: 1 / -1; 
-                display: flex;
-                flex-direction: row; 
-                width: 100%; 
-                gap: 10px;
-            }
-            select { 
-                font-size: 14px; 
-                padding: 10px; 
-            }
-            .grid { 
-                padding: 15px 10px; 
-                gap: 10px; 
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-            }
-            .card { padding: 12px; }
-            .card img { width: 60px; height: 60px; }
-        }
-    </style>
+@media(max-width:700px){
+    .custom-watermark{font-size:9px;top:60%;left:16%;}
+}
+</style>
 </head>
+
 <body>
 
-    <div class="nav">
-        <div class="logo-container">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23e50914' d='M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z'/%3E%3C/svg%3E" alt="VG TV Logo">
-            <span>VG TV</span>
-        </div>
-        
-        <input type="text" id="searchInput" placeholder="Search channels...">
-        
-        <div class="filter-group">
-            <select id="catFilter">
-                <option value="all">All Categories</option>
-            </select>
-            <select id="langFilter">
-                <option value="all">All Languages</option>
-                <option value="Hindi" selected>Hindi</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="grid" class="grid">
-        <div class="status-msg">Loading channels...</div>
-    </div>
-
-    <script>
-        // NEW WORKER URL REPLACED HERE
-        const API_URL = "https://raw.githubusercontent.com/VGLive/tv/refs/heads/main/vg.json";
-        const COOKIE_URL = "https://raw.githubusercontent.com/vaathala00/jow/main/output.json";
-        
-        let allChannels = [];
-        
-        let globalLiveCookie = "Fetching...";
-        
-        const grid = document.getElementById('grid');
-        const searchInput = document.getElementById('searchInput');
-        const catFilter = document.getElementById('catFilter');
-        const langFilter = document.getElementById('langFilter');
-
-        // 1. Fetch Data on load
-        async function fetchChannels() {
-            try {
-                // FETCH LIVE COOKIE FROM RAW TEXT
-                try {
-                    const cookieRes = await fetch(COOKIE_URL);
-                    if (cookieRes.ok) {
-                        const rawText = await cookieRes.text();
-                        // Smart regex to pull exactly the __hdnea__ string, ignoring everything else
-                        const match = rawText.match(/__hdnea__=[A-Za-z0-9~=/*_-]+/);
-                        if (match) {
-                            globalLiveCookie = match[0];
-                        } else {
-                            globalLiveCookie = "Cookie string not found in file";
-                        }
-                    }
-                } catch (e) {
-                    console.error("Failed to fetch live cookie", e);
-                    globalLiveCookie = "Error fetching cookie";
-                }
-
-                // Fetch Channels (with proxy fallback in case the worker blocks direct requests)
-                let res;
-                try {
-                    res = await fetch(API_URL);
-                    if (!res.ok) throw new Error("Direct Fetch Failed");
-                } catch(e) {
-                    res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
-                }
-                
-                if (!res.ok) throw new Error("API Failed");
-                
-                const raw = await res.json();
-                allChannels = formatData(raw);
-                
-                // Sort alphabetically
-                allChannels.sort((a, b) => a.name.localeCompare(b.name));
-                
-                populateFilters(); 
-                applyFilters();
-            } catch (err) {
-                grid.innerHTML = `<div class="status-msg" style="color:red;">Failed to Load Channels.<br>Check Internet Connection.</div>`;
-                console.error(err);
-            }
-        }
-
-        // UPGRADED SMART DATA FORMATTER (Adapts to different JSON structures automatically)
-        function formatData(data) {
-            let channelsArray = [];
-            
-            if (Array.isArray(data)) {
-                channelsArray = data;
-            } else if (typeof data === 'object' && data !== null) {
-                // Check for nested arrays inside the JSON object
-                for (let key in data) {
-                    if (Array.isArray(data[key])) {
-                        channelsArray = data[key];
-                        break;
-                    }
-                }
-                // Fallback: If no array found, parse the object values
-                if (channelsArray.length === 0) {
-                    channelsArray = Object.values(data).filter(item => typeof item === 'object' && item !== null);
-                }
-            }
-
-            return channelsArray.map(c => ({
-                name: c.channel_name || c.name || c.title || "Unknown Channel",
-                logo: c.channel_logo || c.logo || c.logo_url || "https://via.placeholder.com/70?text=TV",
-                category: c.channel_genre || c.category || c.genre || "Others",
-                language: c.channel_language || c.language || c.lang || "Others",
-                url: c.channel_url || c.url || c.stream_url || "No URL Provided",
-                keyId: c.keyId || c.kid || c.clearkey_id || "Null",
-                key: c.channel_key || c.key || c.k || c.clearkey_hex || "Null"
-            }));
-        }
-
-        // 2. Populate Dropdowns (WITH COUNTS)
-        function populateFilters() {
-            const currentCat = catFilter.value;
-            const currentLang = langFilter.value;
-
-            const catBaseList = allChannels.filter(c => currentLang === "all" ? true : c.language === currentLang);
-            const catCounts = {};
-            catBaseList.forEach(c => catCounts[c.category] = (catCounts[c.category] || 0) + 1);
-            
-            let catHTML = `<option value="all">All Categories (${catBaseList.length})</option>`;
-            Object.keys(catCounts).sort().forEach(cat => {
-                 catHTML += `<option value="${cat}" ${cat === currentCat ? 'selected' : ''}>${cat} (${catCounts[cat]})</option>`;
-            });
-            catFilter.innerHTML = catHTML;
-
-            const langBaseList = allChannels.filter(c => currentCat === "all" ? true : c.category === currentCat);
-            const langCounts = {};
-            langBaseList.forEach(c => langCounts[c.language] = (langCounts[c.language] || 0) + 1);
-            
-            let langHTML = `<option value="all">All Languages (${langBaseList.length})</option>`;
-            Object.keys(langCounts).sort().forEach(lang => {
-                langHTML += `<option value="${lang}" ${lang === currentLang ? 'selected' : ''}>${lang} (${langCounts[lang]})</option>`;
-            });
-            langFilter.innerHTML = langHTML;
-        }
-
-        // 3. Render the Grid
-        function renderGrid(channelsToRender) {
-            grid.innerHTML = ""; 
-
-            if (channelsToRender.length === 0) {
-                grid.innerHTML = `<div class="status-msg">No channels match your filters.</div>`;
-                return;
-            }
-
-            channelsToRender.forEach(c => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => playInNewTab(c);
-
-                card.innerHTML = `
-                    <img src="${c.logo}" alt="logo" loading="lazy" onerror="this.src='https://via.placeholder.com/70?text=TV'">
-                    <div class="card-title">${c.name}</div>
-                    <div class="card-badges">
-                        <span class="badge category">${c.category}</span>
-                        <span class="badge language">${c.language}</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // 4. Handle Filtering
-        function applyFilters() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedCat = catFilter.value;
-            const selectedLang = langFilter.value;
-
-            const filteredChannels = allChannels.filter(c => {
-                const matchesSearch = c.name.toLowerCase().includes(searchTerm);
-                const matchesCat = (selectedCat === "all") || (c.category === selectedCat);
-                const matchesLang = (selectedLang === "all") || (c.language === selectedLang);
-                return matchesSearch && matchesCat && matchesLang;
-            });
-
-            renderGrid(filteredChannels);
-            populateFilters(); 
-        }
-
-        searchInput.addEventListener('input', applyFilters);
-        catFilter.addEventListener('change', applyFilters);
-        langFilter.addEventListener('change', applyFilters);
-
-        // 5. BLOB PLAYER - Opens Player in New Tab
-        function playInNewTab(channel) {
-            let cleanUrl = channel.url;
-            if (cleanUrl && cleanUrl.includes('.mpd')) {
-                cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf('.mpd') + 4);
-            } else if (cleanUrl && cleanUrl.includes('?')) {
-                cleanUrl = cleanUrl.split('?')[0]; 
-            }
-
-            const safeKid = JSON.stringify(channel.keyId || "Null");
-            const safeKey = JSON.stringify(channel.key || "Null");
-            const safeCookie = JSON.stringify(globalLiveCookie);
-            const safeUrl = JSON.stringify(cleanUrl);
-            const safeName = JSON.stringify(channel.name || "VG TV Player");
-
-            const playerCode = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>${channel.name || 'VG TV Player'}</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23e50914' d='M96 160L96 400L544 400L544 160L96 160zM32 160C32 124.7 60.7 96 96 96L544 96C579.3 96 608 124.7 608 160L608 400C608 435.3 579.3 464 544 464L96 464C60.7 464 32 435.3 32 400L32 160zM192 512L448 512C465.7 512 480 526.3 480 544C480 561.7 465.7 576 448 576L192 576C174.3 576 160 561.7 160 544C160 526.3 174.3 512 192 512z'/%3E%3C/svg%3E">
-  <meta name="referrer" content="no-referrer">
-
-  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/shaka-player.ui.min.js"><\/script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/controls.css" />
-
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
-      font-family: 'Outfit', sans-serif;
-    }
-
-    .shaka-video-container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
-
-    .custom-watermark {
-      position: absolute;
-      z-index: 40;
-      pointer-events: none;
-      top: 65%;
-      left: 6%;
-      transform: translateY(-50%);
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.12);
-    }
-
-    @media(max-width: 700px){
-      .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="shaka-video-container" id="player-container">
+<div class="shaka-video-container" id="player-container">
     <video id="video" autoplay playsinline preload="metadata"></video>
-    <div class="custom-watermark"> </div>
-  </div>
+    <div class="custom-watermark">Dillzy Creations ™</div>
+</div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) return;
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
 
-      const videoEl = document.getElementById('video');
-      const container = document.getElementById('player-container');
+    shaka.polyfill.installAll();
+    if(!shaka.Player.isBrowserSupported()) return;
 
-      const player = new Shaka.Player(videoEl);
-      const ui = new shaka.ui.Overlay(player, container, videoEl);
+    const videoEl = document.getElementById('video');
+    const container = document.getElementById('player-container');
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    
+    const requestedId = urlParams.get('id') || urlParams.get('channel');
 
-      ui.configure({
-        addBigPlayButton: true,
-        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','language','captions','picture_in_picture','quality','fullscreen'],
-        seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
-      });
+    if(!requestedId){
+        alert("?id=1984)");
+        return;
+    }
 
-      const kid = ${safeKid};
-      const key = ${safeKey};
-      const cookieHeader = ${safeCookie};
-      const streamUrl = ${safeUrl};
+    let streamUrl = "";
+    let drmConfig = { clearKeys: {} };
+    let cookieHeader = "";
 
-      let drmConfig = { clearKeys: {} };
-      if (kid !== "Null" && key !== "Null") {
-        drmConfig.clearKeys[kid] = key;
-      }
+    try {
+       
+        const response = await fetch('https://allrounderid2.pages.dev/api/jiotv2.json', { cache: 'no-store' });
+        const allChannels = await response.json();
 
-      player.configure({
+       
+        const channel = allChannels.find(ch => String(ch.channel_id) === String(requestedId));
+
+        if(channel) {
+            
+            streamUrl = channel.channel_url;
+            
+            if(channel.keyId && channel.key) {
+                drmConfig.clearKeys[channel.keyId.replace(/-/g, '')] = channel.key.replace(/-/g, '');
+            }
+
+            
+            cookieHeader = channel.cookie;
+            document.title = `${channel.channel_name || "Live"} - Sayan Official`;
+
+        } else {
+            alert("not found");
+            return;
+        }
+
+    } catch(e) {
+        console.error("Success", e);
+    }
+
+    const player = new shaka.Player();
+    await player.attach(videoEl);
+    const ui = new shaka.ui.Overlay(player, container, videoEl);
+
+   
+    ui.configure({
+        controlPanelElements: ['play_pause', 'time_and_duration', 'spacer', 'language', 'captions', 'picture_in_picture', 'quality', 'fullscreen'],
+        seekBarColors: {
+            base: 'rgba(255,255,255,0.3)',
+            buffered: 'rgba(255,255,255,0.5)',
+            played: 'red'
+        }
+    });
+
+    player.configure({
         drm: drmConfig,
         manifest: { defaultPresentationDelay: 5 },
-        streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
-      });
+        streaming: {
+            safeSeekOffset: 5,
+            bufferingGoal: 10,
+            rebufferingGoal: 2,
+            lowLatencyMode: true
+        }
+    });
 
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+    
+    player.getNetworkingEngine().registerRequestFilter((type, request) => {
         request.headers['Referer'] = 'https://www.jiotv.com/';
         request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
 
-        if (cookieHeader && cookieHeader !== "PUT_YOUR_COOKIE_HERE") {
-          request.headers['Cookie'] = cookieHeader;
+        if(cookieHeader) {
+            request.headers['Cookie'] = cookieHeader;
 
-          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-               !request.uris[0].includes('__hdnea__')) {
-            const sep = request.uris[0].includes('?') ? '&' : '?';
-            request.uris[0] += sep + cookieHeader;
-          }
+        
+            if((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || 
+                type === shaka.net.NetworkingEngine.RequestType.SEGMENT) 
+                && !request.uris[0].includes('__hdnea__')) {
+                
+                const sep = request.uris[0].includes('?') ? '&' : '?';
+                request.uris[0] += sep + cookieHeader;
+            }
         }
-      });
+    });
 
-      try {
+    try {
         await player.load(streamUrl);
         videoEl.play();
-      } catch (e) {
-        console.error("Stream Load Error:", e);
-        if (e.code === 6001) { 
-            player.configure({ drm: {} });
-            try { await player.load(streamUrl); videoEl.play(); } catch(err){}
-        }
-      }
-    });
-  <\/script>
-</body>
-</html>`;
-
-            const blob = new Blob([playerCode], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
-            window.open(blobUrl, '_blank');
-        }
-
-        // Start App
-        fetchChannels();
-    </script>
-</body>
+    } catch(e) {
+        console.error("স্ট্রিম লোড করতে সমস্যা হয়েছে", e);
+    }
+});
+</script>
+<script>(function(s){s.dataset.zone='10603308',s.src='https://bvtpk.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+</body>  
 </html>
