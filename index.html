@@ -1,100 +1,518 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Jio tv Player {OV} </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VG TV</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv3/refs/heads/main/fav.png">
+    
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-border: #334155;
+            --accent: #e50914;
+            --text: #f8fafc;
+            --sub-text: #94a3b8;
+        }
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* --- Navbar & Filters (Desktop) --- */
+        .nav { 
+            padding: 15px 20px; 
+            background: #0b1120; 
+            border-bottom: 2px solid var(--accent); 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            flex-wrap: wrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        .nav-logo { height: 35px; object-fit: contain; }
+
+        #searchInput { flex: 1; min-width: 150px; }
+
+        .filter-group { 
+            display: flex; 
+            gap: 10px; 
+            flex: 1;
+            min-width: 250px;
+        }
+
+        select, input { 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--card-border); 
+            background: #000; 
+            color: #fff; 
+            outline: none; 
+            font-size: 14px; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        select { flex: 1; width: 100%; }
+        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(229, 9, 20, 0.4); }
+
+        /* --- Grid Layout --- */
+        .grid { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 15px; 
+            align-content: start;
+        }
+
+        .card { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 10px; 
+            text-align: center; 
+            border: 1px solid var(--card-border); 
+            cursor: pointer;
+            transition: all 0.2s ease; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card:hover { 
+            border-color: var(--accent); 
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+        }
+
+        .card img { 
+            width: 70px; 
+            height: 70px; 
+            object-fit: contain; 
+            background: #fff; 
+            border-radius: 8px; 
+            padding: 5px; 
+            margin-bottom: 12px; 
+        }
+
+        .card-title { 
+            font-size: 14px; 
+            font-weight: bold; 
+            width: 100%;
+            overflow: hidden; 
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            margin-bottom: 8px;
+        }
+
+        .card-badges {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.05);
+            color: var(--sub-text);
+        }
+        .badge.category { border-left: 2px solid var(--accent); }
+        .badge.language { border-left: 2px solid #3b82f6; }
+
+        .status-msg { grid-column: 1/-1; text-align: center; color: var(--sub-text); margin-top: 50px; font-size: 16px; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 650px) {
+            .nav { 
+                display: grid;
+                grid-template-columns: auto 1fr; 
+                padding: 12px 10px; 
+                gap: 10px;
+            }
+            .nav-logo { 
+                height: 42px; 
+            }
+            #searchInput { 
+                width: 100%; 
+                font-size: 15px; 
+                padding: 10px 12px; 
+            }
+            .filter-group { 
+                grid-column: 1 / -1; 
+                display: flex;
+                flex-direction: row; 
+                width: 100%; 
+                gap: 10px;
+            }
+            select { 
+                font-size: 14px; 
+                padding: 10px; 
+            }
+            .grid { 
+                padding: 15px 10px; 
+                gap: 10px; 
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            }
+            .card { padding: 12px; }
+            .card img { width: 60px; height: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <img src="https://raw.githubusercontent.com/VGLiveTV/vgtv3/refs/heads/main/logo.png" alt="VG TV Logo" class="nav-logo">
+        
+        <input type="text" id="searchInput" placeholder="Search channels...">
+        
+        <div class="filter-group">
+            <select id="catFilter">
+                <option value="all">All Categories</option>
+            </select>
+            <select id="langFilter">
+                <option value="all">All Languages</option>
+                <option value="Hindi" selected>Hindi</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="grid" class="grid">
+        <div class="status-msg">Loading channels...</div>
+    </div>
+
+    <script>
+        // NEW WORKER URL REPLACED HERE
+        const API_URL = "https://pkll.xojiv79335.workers.dev/";
+        const COOKIE_URL = "https://raw.githubusercontent.com/vaathala00/jow/main/output.json";
+        
+        let allChannels = [];
+        
+        let globalLiveCookie = "Fetching...";
+        
+        const grid = document.getElementById('grid');
+        const searchInput = document.getElementById('searchInput');
+        const catFilter = document.getElementById('catFilter');
+        const langFilter = document.getElementById('langFilter');
+
+        // 1. Fetch Data on load
+        async function fetchChannels() {
+            try {
+                // FETCH LIVE COOKIE FROM RAW TEXT
+                try {
+                    const cookieRes = await fetch(COOKIE_URL);
+                    if (cookieRes.ok) {
+                        const rawText = await cookieRes.text();
+                        // Smart regex to pull exactly the __hdnea__ string, ignoring everything else
+                        const match = rawText.match(/__hdnea__=[A-Za-z0-9~=/*_-]+/);
+                        if (match) {
+                            globalLiveCookie = match[0];
+                        } else {
+                            globalLiveCookie = "Cookie string not found in file";
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch live cookie", e);
+                    globalLiveCookie = "Error fetching cookie";
+                }
+
+                // Fetch Channels (with proxy fallback in case the worker blocks direct requests)
+                let res;
+                try {
+                    res = await fetch(API_URL);
+                    if (!res.ok) throw new Error("Direct Fetch Failed");
+                } catch(e) {
+                    res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(API_URL));
+                }
+                
+                if (!res.ok) throw new Error("API Failed");
+                
+                const raw = await res.json();
+                allChannels = formatData(raw);
+                
+                // Sort alphabetically
+                allChannels.sort((a, b) => a.name.localeCompare(b.name));
+                
+                populateFilters(); 
+                applyFilters();
+            } catch (err) {
+                grid.innerHTML = `<div class="status-msg" style="color:red;">Failed to Load Channels.<br>Check Internet Connection.</div>`;
+                console.error(err);
+            }
+        }
+
+        // UPGRADED SMART DATA FORMATTER (Adapts to different JSON structures automatically)
+        function formatData(data) {
+            let channelsArray = [];
+            
+            if (Array.isArray(data)) {
+                channelsArray = data;
+            } else if (typeof data === 'object' && data !== null) {
+                // Check for nested arrays inside the JSON object
+                for (let key in data) {
+                    if (Array.isArray(data[key])) {
+                        channelsArray = data[key];
+                        break;
+                    }
+                }
+                // Fallback: If no array found, parse the object values
+                if (channelsArray.length === 0) {
+                    channelsArray = Object.values(data).filter(item => typeof item === 'object' && item !== null);
+                }
+            }
+
+            return channelsArray.map(c => ({
+                name: c.channel_name || c.name || c.title || "Unknown Channel",
+                logo: c.channel_logo || c.logo || c.logo_url || "https://via.placeholder.com/70?text=TV",
+                category: c.channel_genre || c.category || c.genre || "Others",
+                language: c.channel_language || c.language || c.lang || "Others",
+                url: c.channel_url || c.url || c.stream_url || "No URL Provided",
+                keyId: c.keyId || c.kid || c.clearkey_id || "Null",
+                key: c.channel_key || c.key || c.k || c.clearkey_hex || "Null"
+            }));
+        }
+
+        // 2. Populate Dropdowns (WITH COUNTS)
+        function populateFilters() {
+            const currentCat = catFilter.value;
+            const currentLang = langFilter.value;
+
+            const catBaseList = allChannels.filter(c => currentLang === "all" ? true : c.language === currentLang);
+            const catCounts = {};
+            catBaseList.forEach(c => catCounts[c.category] = (catCounts[c.category] || 0) + 1);
+            
+            let catHTML = `<option value="all">All Categories (${catBaseList.length})</option>`;
+            Object.keys(catCounts).sort().forEach(cat => {
+                 catHTML += `<option value="${cat}" ${cat === currentCat ? 'selected' : ''}>${cat} (${catCounts[cat]})</option>`;
+            });
+            catFilter.innerHTML = catHTML;
+
+            const langBaseList = allChannels.filter(c => currentCat === "all" ? true : c.category === currentCat);
+            const langCounts = {};
+            langBaseList.forEach(c => langCounts[c.language] = (langCounts[c.language] || 0) + 1);
+            
+            let langHTML = `<option value="all">All Languages (${langBaseList.length})</option>`;
+            Object.keys(langCounts).sort().forEach(lang => {
+                langHTML += `<option value="${lang}" ${lang === currentLang ? 'selected' : ''}>${lang} (${langCounts[lang]})</option>`;
+            });
+            langFilter.innerHTML = langHTML;
+        }
+
+        // 3. Render the Grid
+        function renderGrid(channelsToRender) {
+            grid.innerHTML = ""; 
+
+            if (channelsToRender.length === 0) {
+                grid.innerHTML = `<div class="status-msg">No channels match your filters.</div>`;
+                return;
+            }
+
+            channelsToRender.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => playInNewTab(c);
+
+                card.innerHTML = `
+                    <img src="${c.logo}" alt="logo" loading="lazy" onerror="this.src='https://via.placeholder.com/70?text=TV'">
+                    <div class="card-title">${c.name}</div>
+                    <div class="card-badges">
+                        <span class="badge category">${c.category}</span>
+                        <span class="badge language">${c.language}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 4. Handle Filtering
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCat = catFilter.value;
+            const selectedLang = langFilter.value;
+
+            const filteredChannels = allChannels.filter(c => {
+                const matchesSearch = c.name.toLowerCase().includes(searchTerm);
+                const matchesCat = (selectedCat === "all") || (c.category === selectedCat);
+                const matchesLang = (selectedLang === "all") || (c.language === selectedLang);
+                return matchesSearch && matchesCat && matchesLang;
+            });
+
+            renderGrid(filteredChannels);
+            populateFilters(); 
+        }
+
+        searchInput.addEventListener('input', applyFilters);
+        catFilter.addEventListener('change', applyFilters);
+        langFilter.addEventListener('change', applyFilters);
+
+        // 5. BLOB PLAYER - Opens Player in New Tab
+        function playInNewTab(channel) {
+            let cleanUrl = channel.url;
+            if (cleanUrl && cleanUrl.includes('.mpd')) {
+                cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf('.mpd') + 4);
+            } else if (cleanUrl && cleanUrl.includes('?')) {
+                cleanUrl = cleanUrl.split('?')[0]; 
+            }
+
+            const safeKid = JSON.stringify(channel.keyId || "Null");
+            const safeKey = JSON.stringify(channel.key || "Null");
+            const safeCookie = JSON.stringify(globalLiveCookie);
+            const safeUrl = JSON.stringify(cleanUrl);
+            const safeName = JSON.stringify(channel.name || "VG TV Player");
+
+            const playerCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>${channel.name || 'VG TV Player'}</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/VGLiveTV/vgtv3/refs/heads/main/fav.png">
+  <meta name="referrer" content="no-referrer">
+
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/shaka-player.ui.min.js"><\/script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/controls.css" />
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
+    
     html, body {
+      width: 100%;
+      height: 100%;
       background: #000;
-      height: 100vh;
-      width: 100vw;
       overflow: hidden;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     .shaka-video-container {
-      position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     video {
       width: 100%;
       height: 100%;
-      background: #000;
       object-fit: contain;
+      background: #000;
     }
 
-    .shaka-spinner-container,
-    .shaka-spinner,
-    .shaka-spinner-svg {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
+    .custom-watermark {
+      position: absolute;
+      z-index: 40;
+      pointer-events: none;
+      top: 65%;
+      left: 6%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.12);
     }
 
-    .error-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-    }
-
-    .error-modal.hidden { display: none !important; }
-
-    .error-content {
-      background: #222;
-      border-radius: 15px;
-      padding: 25px;
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-      color: white;
-    }
-
-    .error-content h3 { color: #ff6b6b; margin-bottom: 15px; }
-    .channel-list { display:none; }
-
-    .close-btn {
-      background: #ff4444;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
+    @media(max-width: 700px){
+      .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
     }
   </style>
 </head>
-
 <body>
 
-  <div id="errorModal" class="error-modal hidden">
-    <div class="error-content">
-      <h3 id="errorTitle">@allinone_reborn</h3>
-      <p id="errorMessage"></p>
-      <button class="close-btn" onclick="document.getElementById('errorModal').classList.add('hidden')">Close</button>
-    </div>
-  </div>
-
-  <div class="shaka-video-container" data-shaka-player data-shaka-controls>
-    <video autoplay muted playsinline preload="metadata"></video>
+  <div class="shaka-video-container" id="player-container">
+    <video id="video" autoplay playsinline preload="metadata"></video>
+    <div class="custom-watermark"> </div>
   </div>
 
   <script>
-  const _0x21b864=_0x3e61;function _0x3e61(_0x12c380,_0x27e77e){_0x12c380=_0x12c380-(0x3*-0x33b+0xe9*-0x1a+0x230b);const _0x4894e2=_0x4fd4();let _0x200033=_0x4894e2[_0x12c380];return _0x200033;}(function(_0x30cfac,_0xc633ca){const _0x511d43=_0x3e61,_0xe50556=_0x30cfac();while(!![]){try{const _0x39c54c=parseInt(_0x511d43(0x24c))/(-0x1502+-0x1*0xca+0x15cd)+-parseInt(_0x511d43(0x1fa))/(-0x180d*0x1+-0x227+-0x37*-0x7a)+-parseInt(_0x511d43(0x23d))/(-0x159e+-0xf6+0x1697)*(parseInt(_0x511d43(0x226))/(-0x21fe+0x1*-0x78b+0x298d))+parseInt(_0x511d43(0x1b8))/(0x997+0x1b56+-0x24e8)+parseInt(_0x511d43(0x240))/(0xd59+-0xfbc+-0x1*-0x269)*(-parseInt(_0x511d43(0x21b))/(-0x1b26+-0xd0e+0xd69*0x3))+parseInt(_0x511d43(0x20b))/(0x5*0x2d7+0xe1f*0x1+-0x1c4a)*(parseInt(_0x511d43(0x232))/(-0x1*-0x259f+-0x6bb+-0x1edb))+parseInt(_0x511d43(0x223))/(-0xb5a+0x144b+-0x8e7);if(_0x39c54c===_0xc633ca)break;else _0xe50556['push'](_0xe50556['shift']());}catch(_0x4cacbe){_0xe50556['push'](_0xe50556['shift']());}}}(_0x4fd4,0xa31*0x8d+-0x377*-0x7d+-0x2609b),document[_0x21b864(0x251)+_0x21b864(0x20d)](_0x21b864(0x1b9)+_0x21b864(0x1ee),async()=>{const _0x498587=_0x21b864,_0x384519={'ItAgW':_0x498587(0x1d8),'wrFzi':_0x498587(0x1bb),'aKRtm':_0x498587(0x219)+_0x498587(0x1c5)+_0x498587(0x1b6)+_0x498587(0x24b)+_0x498587(0x225)+'6','qLXYj':_0x498587(0x1d1),'axspO':function(_0x2bd0ed,_0x3a1ab8){return _0x2bd0ed===_0x3a1ab8;},'CXLgD':function(_0x5239bf,_0x735b5e){return _0x5239bf===_0x735b5e;},'DRrTK':_0x498587(0x216),'wjBtg':function(_0x530fe0,_0x17b663){return _0x530fe0+_0x17b663;},'IgpLP':_0x498587(0x21f),'CsIpg':_0x498587(0x20a)+'ge','pBhUQ':_0x498587(0x20e),'KQDao':_0x498587(0x221),'XPKXn':function(_0x3133b3,_0xec212f,_0x376a44){return _0x3133b3(_0xec212f,_0x376a44);},'RHnUT':_0x498587(0x1f2)+_0x498587(0x1b7),'lOmvi':_0x498587(0x1ea)+_0x498587(0x210)+_0x498587(0x1ca)+_0x498587(0x1ed),'fdnrR':function(_0x25014e,_0x34a8ad){return _0x25014e(_0x34a8ad);},'zdgbg':_0x498587(0x24a)+_0x498587(0x1f4)+_0x498587(0x1eb)+_0x498587(0x21a)+_0x498587(0x1f6),'SJyvO':_0x498587(0x1d6)+_0x498587(0x204),'nJySC':_0x498587(0x244)+_0x498587(0x224)+_0x498587(0x22a),'YLcTR':_0x498587(0x1cb)+_0x498587(0x1f1),'HwJDi':function(_0x3eca95,_0x5c67bf){return _0x3eca95===_0x5c67bf;},'rABdq':function(_0x1e1bcf,_0x1afd0b,_0x55cb73){return _0x1e1bcf(_0x1afd0b,_0x55cb73);},'xSrCm':_0x498587(0x207)+'el','ndpTd':function(_0x29bfcc,_0x2d7cdf,_0x5dfd9e){return _0x29bfcc(_0x2d7cdf,_0x5dfd9e);},'QkSxP':_0x498587(0x1ec)+_0x498587(0x1b4)+'d','MBOjo':_0x498587(0x1c7)+_0x498587(0x1e8)+_0x498587(0x22c),'uZYHx':_0x498587(0x1ef),'LMoZY':_0x498587(0x203)+_0x498587(0x1fd)+'er','aXluz':_0x498587(0x1e3),'wgkUq':_0x498587(0x1d7)+_0x498587(0x1c2),'JaBUn':_0x498587(0x1e6),'uHhYA':_0x498587(0x1b5),'UTQWU':_0x498587(0x237),'mtXmc':_0x498587(0x246),'XoNVF':_0x498587(0x202),'NMOES':_0x498587(0x211)+_0x498587(0x1ff),'RYQzk':_0x498587(0x208),'XndyC':_0x498587(0x24f)+_0x498587(0x1f7),'sbIfM':_0x498587(0x24f)+_0x498587(0x1c0),'rSDND':_0x498587(0x1e0)+'0)','uNYEp':function(_0x5b8132,_0x46dddb){return _0x5b8132>_0x46dddb;},'QEGia':function(_0x8daa85,_0x429fe5,_0xa7f346){return _0x8daa85(_0x429fe5,_0xa7f346);},'OScZo':_0x498587(0x236)+'or'},_0x1b133a=new URLSearchParams(window[_0x498587(0x227)][_0x498587(0x1da)]),_0x433c45=_0x1b133a[_0x498587(0x254)]('id');if(!_0x433c45){_0x384519[_0x498587(0x231)](_0x4e4f26,_0x384519[_0x498587(0x1b0)],_0x384519[_0x498587(0x1e7)]);return;}let _0x502cf4=[];try{const _0x1dca68=await _0x384519[_0x498587(0x1dc)](fetch,_0x384519[_0x498587(0x1b2)]);_0x502cf4=await _0x1dca68[_0x498587(0x1d5)]();}catch(_0x469f76){_0x384519[_0x498587(0x231)](_0x4e4f26,_0x384519[_0x498587(0x1dd)],_0x384519[_0x498587(0x228)]);return;}const _0x15e517=_0x502cf4[_0x498587(0x1e4)](_0x4c1c56=>_0x4c1c56[_0x498587(0x1e5)]===_0x433c45);if(!_0x15e517){_0x384519[_0x498587(0x231)](_0x4e4f26,_0x384519[_0x498587(0x1e1)],_0x498587(0x249)+_0x498587(0x258)+_0x498587(0x243)+_0x433c45);return;}if(!_0x15e517[_0x498587(0x21e)]||_0x384519[_0x498587(0x1be)](_0x15e517[_0x498587(0x21e)][_0x498587(0x220)](),'')){_0x384519[_0x498587(0x242)](_0x4e4f26,_0x384519[_0x498587(0x205)],_0x15e517[_0x498587(0x23c)]+(_0x498587(0x23e)+_0x498587(0x1bd)+_0x498587(0x212)+_0x498587(0x1c4)));return;}shaka[_0x498587(0x245)][_0x498587(0x234)]();if(!shaka[_0x498587(0x248)][_0x498587(0x222)+_0x498587(0x23a)]()){_0x384519[_0x498587(0x1fb)](_0x4e4f26,_0x384519[_0x498587(0x215)],_0x384519[_0x498587(0x235)]);return;}const _0x146594=document[_0x498587(0x206)+_0x498587(0x1f3)](_0x384519[_0x498587(0x21c)]);_0x146594[_0x498587(0x1d0)]=!![],_0x146594[_0x498587(0x1cd)]=!![],_0x146594[_0x498587(0x23b)+'e']=!![];const _0x455c69=new shaka[(_0x498587(0x248))](_0x146594),_0x1e5de7=document[_0x498587(0x206)+_0x498587(0x1f3)](_0x384519[_0x498587(0x214)]),_0x4c02e9=new shaka['ui'][(_0x498587(0x201))](_0x455c69,_0x1e5de7,_0x146594);_0x4c02e9[_0x498587(0x256)]({'controlPanelElements':[_0x384519[_0x498587(0x1f8)],_0x384519[_0x498587(0x1df)],_0x384519[_0x498587(0x1db)],_0x384519[_0x498587(0x22b)],_0x384519[_0x498587(0x218)],_0x384519[_0x498587(0x217)],_0x384519[_0x498587(0x250)],_0x384519[_0x498587(0x1bc)],_0x384519[_0x498587(0x1c9)]],'addBigPlayButton':!![],'seekBarColors':{'base':_0x384519[_0x498587(0x1d9)],'buffered':_0x384519[_0x498587(0x239)],'played':_0x384519[_0x498587(0x1c3)]}});const _0x207094=_0x15e517[_0x498587(0x1cf)]&&_0x384519[_0x498587(0x1c8)](Object[_0x498587(0x20c)](_0x15e517[_0x498587(0x1cf)])[_0x498587(0x1e2)],-0xd*0x161+-0xa*0x272+-0x23b*-0x13)?{'clearKeys':_0x15e517[_0x498587(0x1cf)]}:{};_0x455c69[_0x498587(0x256)]({'drm':_0x207094,'streaming':{'lowLatencyMode':!![],'bufferingGoal':0x19,'rebufferingGoal':0x5,'bufferBehind':0x1e,'ignoreTextStreamFailures':!![],'alwaysStreamText':![],'retryParameters':{'timeout':0x3a98,'maxAttempts':0x3,'baseDelay':0x1f4,'backoffFactor':1.5,'fuzzFactor':0.5},'segmentRequestTimeout':0x2710,'segmentRequestRetries':0x2},'manifest':{'retryParameters':{'timeout':0x2710,'maxAttempts':0x2}},'abr':{'enabled':!![],'defaultBandwidthEstimate':0x2dc6c0,'switchInterval':0x8}}),_0x455c69[_0x498587(0x1c1)+_0x498587(0x253)]()[_0x498587(0x22d)+_0x498587(0x1f9)+'r']((_0xb55a07,_0x173fe3)=>{const _0x28ce3f=_0x498587;if(_0x15e517[_0x28ce3f(0x238)])_0x173fe3[_0x28ce3f(0x24d)][_0x384519[_0x28ce3f(0x24e)]]=_0x15e517[_0x28ce3f(0x238)];_0x173fe3[_0x28ce3f(0x24d)][_0x384519[_0x28ce3f(0x1b1)]]=_0x15e517[_0x28ce3f(0x1fe)]||_0x384519[_0x28ce3f(0x230)];if(_0x15e517[_0x28ce3f(0x22f)]){_0x173fe3[_0x28ce3f(0x24d)][_0x384519[_0x28ce3f(0x22e)]]=_0x15e517[_0x28ce3f(0x22f)];if((_0x384519[_0x28ce3f(0x1bf)](_0xb55a07,shaka[_0x28ce3f(0x257)][_0x28ce3f(0x1f5)+_0x28ce3f(0x247)][_0x28ce3f(0x20f)+'e'][_0x28ce3f(0x1d2)])||_0x384519[_0x28ce3f(0x1fc)](_0xb55a07,shaka[_0x28ce3f(0x257)][_0x28ce3f(0x1f5)+_0x28ce3f(0x247)][_0x28ce3f(0x20f)+'e'][_0x28ce3f(0x1cc)]))&&_0x173fe3[_0x28ce3f(0x1d4)][-0xf65+-0x19b7+-0x36d*-0xc]&&!_0x173fe3[_0x28ce3f(0x1d4)][0x4*-0x12a+0xdc7+-0x91f][_0x28ce3f(0x1ba)](_0x384519[_0x28ce3f(0x213)])){const _0x294f70=_0x173fe3[_0x28ce3f(0x1d4)][0x156f+-0x5a+0x303*-0x7][_0x28ce3f(0x1ba)]('?')?'&':'?';_0x173fe3[_0x28ce3f(0x1d4)][-0x2212+-0x1*-0x17dd+0x27*0x43]+=_0x384519[_0x28ce3f(0x1b3)](_0x294f70,_0x15e517[_0x28ce3f(0x22f)]);}}});try{await _0x455c69[_0x498587(0x229)](_0x15e517[_0x498587(0x21e)]),document[_0x498587(0x209)]=_0x15e517[_0x498587(0x23c)];}catch(_0x5a3884){_0x384519[_0x498587(0x1c6)](_0x4e4f26,_0x384519[_0x498587(0x200)],_0x5a3884[_0x498587(0x255)]);}function _0x4e4f26(_0x1ff746,_0xc1c713){const _0x90d4f1=_0x498587;document[_0x90d4f1(0x233)+_0x90d4f1(0x21d)](_0x384519[_0x90d4f1(0x252)])[_0x90d4f1(0x1f0)+'t']=_0x1ff746,document[_0x90d4f1(0x233)+_0x90d4f1(0x21d)](_0x384519[_0x90d4f1(0x241)])[_0x90d4f1(0x23f)]=_0xc1c713,document[_0x90d4f1(0x233)+_0x90d4f1(0x21d)](_0x384519[_0x90d4f1(0x1ce)])[_0x90d4f1(0x1e9)][_0x90d4f1(0x1d3)](_0x384519[_0x90d4f1(0x1de)]);}}));function _0x4fd4(){const _0x39156a=['.5\x20(Linux;','QEGia','Shaka\x20Play','uNYEp','RYQzk','a.html?id=','Channel\x20No','SEGMENT','autoplay','pBhUQ','drm','muted','Cookie','MANIFEST','remove','uris','json','Connection','time_and_d','Referer','XndyC','search','JaBUn','fdnrR','SJyvO','KQDao','wgkUq','rgb(255,0,','YLcTR','length','play_pause','find','channel_id','mute','lOmvi','er\x20not\x20sup','classList','Example:\x20p','rn.online/','Browser\x20No','1069','Loaded','video','textConten','t\x20Found','Channel\x20ID','tor','linonerebo','Networking','str.json','55,255,.2)','aXluz','questFilte','868268NFEmrY','ndpTd','CXLgD','eo-contain','userAgent','_picture','OScZo','Overlay','language','.shaka-vid','\x20Error','xSrCm','querySelec','Info\x20Chann','fullscreen','title','errorMessa','282896ReQPHz','keys','stener','errorModal','RequestTyp','layer_indi','picture_in','reaming\x20ch','DRrTK','LMoZY','QkSxP','__hdnea__=','mtXmc','UTQWU','plaYtv/7.1','jstrweb2/j','14RkGwkx','uZYHx','ById','mpd','errorTitle','trim','hidden','isBrowserS','3298600NHDNAY','fetch\x20chan','rLib/2.11.','545788hcBFeq','location','nJySC','load','nel\x20list.','uHhYA','ported.','registerRe','qLXYj','token','aKRtm','XPKXn','108twNOWl','getElement','installAll','MBOjo','Stream\x20Err','spacer','referer','sbIfM','upported','playsInlin','name','9vtEBdX','<br>This\x20i','innerHTML','1317216wDhXKE','CsIpg','rABdq','\x20ID:\x20','Unable\x20to\x20','polyfill','quality','Engine','Player','No\x20channel','https://al',')\x20ExoPlaye','213921jJpYYj','headers','ItAgW','rgba(255,2','XoNVF','addEventLi','IgpLP','ingEngine','get','message','configure','net','\x20found\x20for','RHnUT','wrFzi','zdgbg','wjBtg','t\x20Supporte','volume','Android\x2013','\x20Missing','3186815jLWXbz','DOMContent','includes','User-Agent','NMOES','s\x20not\x20a\x20st','HwJDi','axspO','55,255,.4)','getNetwork','uration','rSDND','annel.'];_0x4fd4=function(){return _0x39156a;};return _0x4fd4();}
-  </script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) return;
 
+      const videoEl = document.getElementById('video');
+      const container = document.getElementById('player-container');
+
+      const player = new shaka.Player(videoEl);
+      const ui = new shaka.ui.Overlay(player, container, videoEl);
+
+      ui.configure({
+        addBigPlayButton: true,
+        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','language','captions','picture_in_picture','quality','fullscreen'],
+        seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
+      });
+
+      const kid = ${safeKid};
+      const key = ${safeKey};
+      const cookieHeader = ${safeCookie};
+      const streamUrl = ${safeUrl};
+
+      let drmConfig = { clearKeys: {} };
+      if (kid !== "Null" && key !== "Null") {
+        drmConfig.clearKeys[kid] = key;
+      }
+
+      player.configure({
+        drm: drmConfig,
+        manifest: { defaultPresentationDelay: 5 },
+        streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
+      });
+
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        request.headers['Referer'] = 'https://www.jiotv.com/';
+        request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
+
+        if (cookieHeader && cookieHeader !== "PUT_YOUR_COOKIE_HERE") {
+          request.headers['Cookie'] = cookieHeader;
+
+          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
+               !request.uris[0].includes('__hdnea__')) {
+            const sep = request.uris[0].includes('?') ? '&' : '?';
+            request.uris[0] += sep + cookieHeader;
+          }
+        }
+      });
+
+      try {
+        await player.load(streamUrl);
+        videoEl.play();
+      } catch (e) {
+        console.error("Stream Load Error:", e);
+        if (e.code === 6001) { 
+            player.configure({ drm: {} });
+            try { await player.load(streamUrl); videoEl.play(); } catch(err){}
+        }
+      }
+    });
+  <\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([playerCode], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
+
+        // Start App
+        fetchChannels();
+    </script>
 </body>
 </html>
