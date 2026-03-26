@@ -1,126 +1,340 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>PTV Sports</title>
-  <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/en/e/e4/PTV_Sports.png">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">  
-  <style>  
-   * { margin: 0; padding: 0; box-sizing: border-box; }  
-    html, body {  
-      background: #000;  
-      height: 100vh;  
-      width: 100vw;  
-      overflow: hidden;  
-      font-family: system-ui, -apple-system, sans-serif;  
-    }  
-    .shaka-video-container {  
-      position: absolute;  
-      inset: 0;  
-      width: 100%;  
-      height: 100%;  
-    }  
-    video {  
-      width: 100%;  
-      height: 100%;  
-      background: #000;  
-      object-fit: contain;  
-    }  
-    .shaka-spinner-container,  
-    .shaka-spinner,  
-    .shaka-spinner-svg {  
-      display: none !important;  
-      visibility: hidden !important;  
-      opacity: 0 !important;  
-    }  
-  </style>  
-</head>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Sports Hindi Channels</title>
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon fill='red' points='50,10 61,40 94,40 68,60 78,90 50,70 22,90 32,60 6,40 39,40'/></svg>">
+    
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/controls.css"/>
 
-  <body>  
-  <div class="shaka-video-container" data-shaka-player>  
-    <video autoplay playsinline preload="metadata" poster="https://www.ptvsportstv.com.pk/wp-content/uploads/2022/10/ptv-sports-live-streaming.png"></video>  
-  </div>  
-  
-  <script>  
-    document.addEventListener('DOMContentLoaded', async () => {  
-      shaka.polyfill.installAll();  
-  
-      if (!shaka.Player.isBrowserSupported()) {  
-        console.error('Browser not supported');  
-        return;  
-      }  
-  
-      const video = document.querySelector('video');  
-      const player = new shaka.Player();  
-      await player.attach(video);  
-  
-      const container = document.querySelector('.shaka-video-container');  
-      const ui = new shaka.ui.Overlay(player, container, video);  
-  
-      ui.configure({  
-        controlPanelElements: [  
-          'play_pause', 'time_and_duration', 'mute', 'volume',  
-          'spacer', 'language', 'captions', 'picture_in_picture',  
-          'quality', 'fullscreen'  
-        ],  
-        volumeBarColors: {  
-          base: 'white',  
-          level: 'white'  
-        },  
-        seekBarColors: {  
-          base: 'white',  
-          buffered: 'red',  
-          played: 'green'  
+    <style>
+        :root {
+            --bg-dark: #0a0e27;
+            --accent: #00ff9f;
+            --card-bg: rgba(20, 25, 45, 0.9);
         }
-      });  
-  
-      // ✅ Your DRM Key + MPD URL  
-      let drmConfig = {  
-        clearKeys: {  
-          "a7712196dbee413ab510c825e5c4d3f0": "1ade126fa6a9162ba34bd5de5b1427ca"  
-        }  
-      };  
-  
-      let streamUrl = "https://ottlive.dishhome.com.np/protected/jQTOzZkB0RDJ74Ryniuo/dash/manifest.mpd";  
-  
-      player.configure({  
-        drm: drmConfig,  
-        streaming: {  
-          lowLatencyMode: true,  
-          bufferingGoal: 15,  
-          rebufferingGoal: 2,  
-          bufferBehind: 15,  
-          retryParameters: {  
-            timeout: 10000,  
-            maxAttempts: 5,  
-            baseDelay: 300,  
-            backoffFactor: 1.2  
-          },  
-          segmentRequestTimeout: 8000,  
-          segmentPrefetchLimit: 2,  
-          useNativeHlsOnSafari: true  
-        },  
-        manifest: {  
-          retryParameters: {  
-            timeout: 8000,  
-            maxAttempts: 3  
-          }  
-        }  
-      });  
-  
-      player.addEventListener('error', (event) => {  
-        console.error('Shaka Player Error:', event.detail);  
-      });  
-  
-      try {  
-        await player.load(streamUrl);  
-        console.log("Stream loaded successfully");  
-      } catch (error) {  
-        console.error('Load error:', error);  
-      }  
-    });  
-  </script>  
-</body>  
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Archivo', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Main Menu (Grid) Styles --- */
+        #grid-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .header {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 255, 159, 0.5);
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border: 2px solid rgba(0, 255, 159, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.2);
+        }
+
+        .logo-box {
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo-box img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+
+        .channel-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .live-badge {
+            background: #ff4757;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* --- Player View Styles --- */
+        #player-view {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .shaka-video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="grid-view">
+        <div class="header">
+            <h1>📺 Star Sports Channels</h1>
+            <p style="margin-top:10px;">Premium Star Sports Hindi Channels</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="channel-card" onclick="loadStream('ss1h')">
+                <div class="logo-box">
+                    <img src="https://github.com/VGLive/SS1H/blob/main/1.png?raw=true" alt="Star Sports 1 Hindi HD">
+                </div>
+                <div class="channel-name">Star Sports 1 Hindi HD</div>
+                <div class="live-badge">Live</div>
+            </div>
+
+            <div class="channel-card" onclick="loadStream('ss2h')">
+                <div class="logo-box">
+                    <img src="https://github.com/VGLive/SS2H/blob/main/2.png?raw=true" alt="Star Sports 2 Hindi HD">
+                </div>
+                <div class="channel-name">Star Sports 2 Hindi HD</div>
+                <div class="live-badge">Live</div>
+            </div>
+
+            <div class="channel-card" onclick="loadStream('ss1')">
+                <div class="logo-box">
+                    <img src="https://github.com/VGLive/SS1/blob/main/1.png?raw=true" alt="Star Sports 1 HD">
+                </div>
+                <div class="channel-name">Star Sports 1 Hindi</div>
+                <div class="live-badge">Live</div>
+            </div>
+
+            <div class="channel-card" onclick="loadStream('ss2')">
+                <div class="logo-box">
+                    <img src="https://github.com/VGLive/SS2/blob/main/2.png?raw=true" alt="Star Sports 2 HD">
+                </div>
+                <div class="channel-name">Star Sports 2 Hindi</div>
+                <div class="live-badge">Live</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="player-view">
+        <button class="back-btn" onclick="goBack()">← Back</button>
+        <div class="shaka-video-container" id="player-container">
+            <video id="video" autoplay muted playsinline preload="metadata"></video>
+        </div>
+    </div>
+
+    <script>
+        // Channel Data Configuration
+        const channels = {
+            ss1h: {
+                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd",
+                keyId: "400131994b445d8c8817202248760fda",
+                key: "2d56cb6f07a75b9aff165d534ae2bfc4"
+            },
+            ss2h: {
+                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSportsHD2Hin_BTS/output/index.mpd",
+                keyId: "bd1ea6a1c1fb5dcdb709434e0826bbc0",
+                key: "f57f22cba32739ce7beb1fab3f3d060b"
+            },
+            ss1: {
+                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_1_Hindi_BTS/output/index.mpd",
+                keyId: "8ea9b607549252068e260a5f4d7dd321",
+                key: "350c0aaffedf51cc1502e9543c7c885e"
+            },
+            ss2: {
+                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSports2Hin_BTS/output/index.mpd",
+                keyId: "a3ed8dc0e0cb5d238da80ee0a85bd2e1",
+                key: "67a96992e6406606f3480ab58d7f540c"
+            }
+        };
+
+        const cookieUrl = "https://raw.githubusercontent.com/vaathala00/jow/main/output.json";
+        
+        let player;
+        let cookieValue = "";
+
+        // Initialize Shaka Player on load
+        document.addEventListener("DOMContentLoaded", async () => {
+            shaka.polyfill.installAll();
+            if (!shaka.Player.isBrowserSupported()) {
+                alert("Browser not supported for video streaming.");
+                return;
+            }
+
+            const video = document.getElementById("video");
+            const container = document.getElementById("player-container");
+
+            player = new shaka.Player(video);
+            const ui = new shaka.ui.Overlay(player, container, video);
+
+            ui.configure({
+                addBigPlayButton: true,
+                controlPanelElements: ["play_pause", "mute", "volume", "spacer", "quality", "picture_in_picture", "fullscreen"],
+                seekBarColors: { base: "white", buffered: "red", played: "green" }
+            });
+
+            // Fetch generic cookie data
+            try {
+                const response = await fetch(cookieUrl, { cache: "no-store" });
+                const rawText = await response.text();
+                const match = rawText.match(/__hdnea__=[A-Za-z0-9~=/*_-]+/);
+                if (match) cookieValue = match[0];
+            } catch (e) {
+                console.error("Failed to fetch cookie:", e);
+            }
+
+            // Setup network filters for the cookie
+            player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                if (cookieValue) {
+                    let urlCookie = cookieValue.startsWith("__hdnea__=") ? cookieValue.substring(10) : cookieValue;
+                    if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || 
+                         type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && 
+                         !request.uris[0].includes("__hdnea__")) {
+                        const sep = request.uris[0].includes("?") ? "&" : "?";
+                        request.uris[0] += sep + "__hdnea__=" + urlCookie;
+                    }
+                }
+            });
+
+            // Handle unmuting logic
+            video.addEventListener("play", () => {
+                video.muted = false;
+            }, { once: true });
+        });
+
+        // Function to load the selected stream
+        async function loadStream(channelId) {
+            const config = channels[channelId];
+            
+            // UI Toggle
+            document.getElementById('grid-view').style.display = 'none';
+            document.getElementById('player-view').style.display = 'block';
+
+            // Configure Player for specific channel
+            player.configure({
+                drm: { clearKeys: { [config.keyId]: config.key } },
+                manifest: { defaultPresentationDelay: 5 },
+                streaming: {
+                    lowLatencyMode: true,
+                    bufferingGoal: 10,
+                    rebufferingGoal: 2,
+                    safeSeekOffset: 5
+                }
+            });
+
+            try {
+                await player.load(config.streamUrl);
+                document.getElementById("video").play().catch(() => {});
+            } catch (e) {
+                console.error("Error loading stream", e);
+            }
+        }
+
+        // Function to go back to the menu
+        async function goBack() {
+            try {
+                await player.unload(); // Stop current stream completely
+                document.getElementById("video").muted = true; // reset muting logic for next play
+            } catch (e) {
+                console.error("Error unloading stream", e);
+            }
+            
+            // UI Toggle
+            document.getElementById('player-view').style.display = 'none';
+            document.getElementById('grid-view').style.display = 'flex';
+        }
+    </script>
+</body>
 </html>
