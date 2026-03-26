@@ -29,7 +29,7 @@
 
         /* --- Main Menu (Grid) Styles --- */
         #grid-view {
-            display: flex;
+            display: none; /* Hidden by default, JS will reveal if no channel is selected */
             flex-direction: column;
             align-items: center;
             width: 100%;
@@ -129,6 +129,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         video {
@@ -138,30 +139,22 @@
             background: #000;
         }
 
-        .back-btn {
+        .custom-watermark {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            border: 2px solid var(--accent);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
+            z-index: 40;
+            pointer-events: none;
+            top: 65%;
+            left: 6%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.12);
         }
 
-        .back-btn:hover {
-            background: var(--accent);
-            color: #000;
-        }
-
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .header h1 { font-size: 1.8rem; }
             .grid-container { grid-template-columns: 1fr; }
+            .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
         }
     </style>
 </head>
@@ -174,44 +167,44 @@
         </div>
 
         <div class="grid-container">
-            <div class="channel-card" onclick="loadStream('ss1h')">
+            <a href="?channel=ss1h" target="_blank" class="channel-card">
                 <div class="logo-box">
                     <img src="https://github.com/VGLive/SS1H/blob/main/1.png?raw=true" alt="Star Sports 1 Hindi HD">
                 </div>
                 <div class="channel-name">Star Sports 1 Hindi HD</div>
                 <div class="live-badge">Live</div>
-            </div>
+            </a>
 
-            <div class="channel-card" onclick="loadStream('ss2h')">
+            <a href="?channel=ss2h" target="_blank" class="channel-card">
                 <div class="logo-box">
                     <img src="https://github.com/VGLive/SS2H/blob/main/2.png?raw=true" alt="Star Sports 2 Hindi HD">
                 </div>
                 <div class="channel-name">Star Sports 2 Hindi HD</div>
                 <div class="live-badge">Live</div>
-            </div>
+            </a>
 
-            <div class="channel-card" onclick="loadStream('ss1')">
+            <a href="?channel=ss1" target="_blank" class="channel-card">
                 <div class="logo-box">
                     <img src="https://github.com/VGLive/SS1/blob/main/1.png?raw=true" alt="Star Sports 1 HD">
                 </div>
                 <div class="channel-name">Star Sports 1 Hindi</div>
                 <div class="live-badge">Live</div>
-            </div>
+            </a>
 
-            <div class="channel-card" onclick="loadStream('ss2')">
+            <a href="?channel=ss2" target="_blank" class="channel-card">
                 <div class="logo-box">
                     <img src="https://github.com/VGLive/SS2/blob/main/2.png?raw=true" alt="Star Sports 2 HD">
                 </div>
                 <div class="channel-name">Star Sports 2 Hindi</div>
                 <div class="live-badge">Live</div>
-            </div>
+            </a>
         </div>
     </div>
 
     <div id="player-view">
-        <button class="back-btn" onclick="goBack()">← Back</button>
         <div class="shaka-video-container" id="player-container">
             <video id="video" autoplay muted playsinline preload="metadata"></video>
+            <div class="custom-watermark"> </div>
         </div>
     </div>
 
@@ -219,21 +212,25 @@
         // Channel Data Configuration
         const channels = {
             ss1h: {
+                title: "Star Sports 1 Hindi HD",
                 streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd",
                 keyId: "400131994b445d8c8817202248760fda",
                 key: "2d56cb6f07a75b9aff165d534ae2bfc4"
             },
             ss2h: {
+                title: "Star Sports 2 Hindi HD",
                 streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSportsHD2Hin_BTS/output/index.mpd",
                 keyId: "bd1ea6a1c1fb5dcdb709434e0826bbc0",
                 key: "f57f22cba32739ce7beb1fab3f3d060b"
             },
             ss1: {
+                title: "Star Sports 1 Hindi",
                 streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_1_Hindi_BTS/output/index.mpd",
                 keyId: "8ea9b607549252068e260a5f4d7dd321",
                 key: "350c0aaffedf51cc1502e9543c7c885e"
             },
             ss2: {
+                title: "Star Sports 2 Hindi",
                 streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSports2Hin_BTS/output/index.mpd",
                 keyId: "a3ed8dc0e0cb5d238da80ee0a85bd2e1",
                 key: "67a96992e6406606f3480ab58d7f540c"
@@ -241,12 +238,25 @@
         };
 
         const cookieUrl = "https://raw.githubusercontent.com/vaathala00/jow/main/output.json";
-        
-        let player;
-        let cookieValue = "";
 
-        // Initialize Shaka Player on load
         document.addEventListener("DOMContentLoaded", async () => {
+            // Check the URL for a 'channel' parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentChannelId = urlParams.get('channel');
+
+            if (currentChannelId && channels[currentChannelId]) {
+                // If a valid channel is in the URL, show the player
+                document.getElementById('player-view').style.display = 'block';
+                document.title = channels[currentChannelId].title;
+                await initPlayer(channels[currentChannelId]);
+            } else {
+                // Otherwise, show the main menu
+                document.getElementById('grid-view').style.display = 'flex';
+            }
+        });
+
+        // Function to initialize and load the video player
+        async function initPlayer(config) {
             shaka.polyfill.installAll();
             if (!shaka.Player.isBrowserSupported()) {
                 alert("Browser not supported for video streaming.");
@@ -256,7 +266,9 @@
             const video = document.getElementById("video");
             const container = document.getElementById("player-container");
 
-            player = new shaka.Player(video);
+            video.muted = true;
+
+            const player = new shaka.Player(video);
             const ui = new shaka.ui.Overlay(player, container, video);
 
             ui.configure({
@@ -266,6 +278,7 @@
             });
 
             // Fetch generic cookie data
+            let cookieValue = "";
             try {
                 const response = await fetch(cookieUrl, { cache: "no-store" });
                 const rawText = await response.text();
@@ -288,21 +301,7 @@
                 }
             });
 
-            // Handle unmuting logic
-            video.addEventListener("play", () => {
-                video.muted = false;
-            }, { once: true });
-        });
-
-        // Function to load the selected stream
-        async function loadStream(channelId) {
-            const config = channels[channelId];
-            
-            // UI Toggle
-            document.getElementById('grid-view').style.display = 'none';
-            document.getElementById('player-view').style.display = 'block';
-
-            // Configure Player for specific channel
+            // Configure Player
             player.configure({
                 drm: { clearKeys: { [config.keyId]: config.key } },
                 manifest: { defaultPresentationDelay: 5 },
@@ -314,26 +313,18 @@
                 }
             });
 
+            // Load Stream
             try {
                 await player.load(config.streamUrl);
-                document.getElementById("video").play().catch(() => {});
+                video.play().catch(() => {});
             } catch (e) {
                 console.error("Error loading stream", e);
             }
-        }
 
-        // Function to go back to the menu
-        async function goBack() {
-            try {
-                await player.unload(); // Stop current stream completely
-                document.getElementById("video").muted = true; // reset muting logic for next play
-            } catch (e) {
-                console.error("Error unloading stream", e);
-            }
-            
-            // UI Toggle
-            document.getElementById('player-view').style.display = 'none';
-            document.getElementById('grid-view').style.display = 'flex';
+            // Handle unmuting logic
+            video.addEventListener("play", () => {
+                video.muted = false;
+            }, { once: true });
         }
     </script>
 </body>
