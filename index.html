@@ -1,201 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>STAR SPORTS 1 HINDI HD</title>
-<script src="https://concurfortunes.com/f1/36/4f/f1364f132c7dfa615f8ca878e6f0155e.js"></script>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Sports Channels</title>
+<script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      background: #000;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .shaka-video-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      object-fit: contain;
-    }
-    .shaka-spinner-container,
-    .shaka-spinner,
-    .shaka-spinner-svg {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
-    #chromeModal .modal-content {
-      background: rgba(255, 0, 0, 0.1);
-      border: 1px solid rgba(255, 0, 0, 0.3);
-    }
-    #chromeModal h2 {
-      color: #f87171;
-    }
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      backdrop-filter: blur(6px);
-      background: rgba(0,0,0,0.4);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      animation: fadeIn .5s ease;
-    }
-    .modal.hidden { display: none !important; }
-    .modal-content {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 30px 25px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      color: #f3f4f6;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      backdrop-filter: blur(12px);
-      transform: scale(.95);
-      animation: scaleIn .4s ease forwards;
-    }
-    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-    @keyframes scaleIn { to { transform: scale(1); opacity: 1 } }
-  </style>
-<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
-<meta name='google-adsense-platform-domain' content='blogspot.com'/>
+<style>
+body {
+  margin:0;
+  background:#0d1117;
+  font-family: Arial, sans-serif;
+  color:white;
+}
+
+.header {
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+  padding:15px;
+  background: linear-gradient(90deg,#008000,#00c853);
+}
+
+.channels-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+  padding:15px;
+}
+
+.channel-card {
+  background:#1a1a1a;
+  border-radius:15px;
+  padding:10px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+  box-shadow:0 0 10px rgba(0,255,0,0.3);
+}
+
+.channel-card:hover {
+  transform:translateY(-5px);
+  background:#00c853;
+}
+
+.channel-card img {
+  width:80px;
+  height:80px;
+  object-fit:contain;
+  margin-bottom:8px;
+  border-radius:8px;
+}
+
+.channel-card div {
+  font-weight:bold;
+  font-size:16px;
+}
+
+.player-section {
+  display:none;
+  padding:20px;
+  text-align:center;
+}
+
+#jwPlayer {
+  width:100%;
+  max-width:960px;
+  height:540px;
+  border-radius:12px;
+  overflow:hidden;
+  margin:auto;
+}
+
+.back-btn {
+  margin-top:15px;
+  padding:10px 20px;
+  background:#008000;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.back-btn:hover { background:#00c853; }
+</style>
 </head>
-
 <body>
 
-  <!-- Chrome Only Modal -->
-  <div id="chromeModal" class="modal hidden" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <h2>Please Open in Chrome</h2>
-      <p>This site is optimized for <strong>Google Chrome</strong>. Please open the link in Chrome browser for the best experience.</p>
-    </div>
-  </div>
+<div class="header">Live Sports Channels</div>
 
-  <div class="shaka-video-container" data-shaka-player>
-    <video autoplay playsinline preload="metadata" poster=""></video>
-  </div>
+<div id="channelsContainer" class="channels-grid"></div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-      if (!isChrome) {
-        const chromeModal = document.getElementById('chromeModal');
-        chromeModal.classList.remove('hidden');
-        chromeModal.setAttribute('aria-hidden', 'false');
-        return;
-      }
+<div class="player-section" id="playerSection">
+  <div id="jwPlayer"></div>
+  <button class="back-btn" id="backBtn">← Back to Channels</button>
+</div>
 
-      shaka.polyfill.installAll();
+<script>
+const channels = [
+  {
+    name: "PTV Sports",
+    logo: "https://i.imgur.com/CPm6GHA.png",
+    url: "https://tx4.timeout1.top:8088/mobile/stream9_160p/playlist.m3u8?id=33&pk=36927a9313532afdd60fd8ad5ec970527fe3855c82059a151e3c5f92bec31a44b4b7d62235e82a9cd9812e2ff75da1a6ab2ae82b7fe36f8dea9d5be8736e295e"
+  },
+  {
+    name: "Sky Sports",
+    logo: "https://i.imgur.com/J74SMxj.png",
+    url: "https://tx4.timeout1.top:8088/mobile/stream8_160p/playlist.m3u8?id=29&pk=36927a9313532afdd60fd8ad5ec970527fe3855c82059a151e3c5f92bec31a44b4b7d62235e82a9cd9812e2ff75da1a6ab2ae82b7fe36f8dea9d5be8736e295e"
+  },
+  {
+    name: "Willow Hindi 2",
+    logo: "https://i.postimg.cc/CLNyCkV2/willow-blue-logo-362ed8e.png",
+    url: "https://tx4.timeout1.top:8088/mobile/stream6_240p/playlist.m3u8?id=22&pk=36927a9313532afdd60fd8ad5ec970527fe3855c82059a151e3c5f92bec31a44b4b7d62235e82a9cd9812e2ff75da1a6ab2ae82b7fe36f8dea9d5be8736e295e"
+  },
+  {
+    name: "Star Sports 2",
+    logo: "https://i.postimg.cc/kGL2fz8B/image.png",
+    url: "https://tx4.timeout1.top:8088/mobile/stream7_240p/playlist.m3u8?id=26&pk=36927a9313532afdd60fd8ad5ec970527fe3855c82059a151e3c5f92bec31a44b4b7d62235e82a9cd9812e2ff75da1a6ab2ae82b7fe36f8dea9d5be8736e295e"
+  },
+  {
+    name: "Willow English",
+    logo: "https://i.postimg.cc/CLNyCkV2/willow-blue-logo-362ed8e.png",
+    url: "https://tx4.timeout1.top:8088/mobile/stream1_240p/playlist.m3u8?id=2&pk=36927a9313532afdd60fd8ad5ec970527fe3855c82059a151e3c5f92bec31a44b4b7d62235e82a9cd9812e2ff75da1a6ab2ae82b7fe36f8dea9d5be8736e295e"
+  }
+];
 
-      if (!shaka.Player.isBrowserSupported()) {
-        console.error('Browser not supported');
-        return;
-      }
+const container = document.getElementById("channelsContainer");
+const playerSection = document.getElementById("playerSection");
+const backBtn = document.getElementById("backBtn");
 
-      let cookieHeader = "";
+var jwPlayerInstance = jwplayer("jwPlayer");
 
-      // ✅ Fetch cookieHeader from external JSON
-      try {
-        const res = await fetch("https://raw.githubusercontent.com/24sports-net/cookie-updater/refs/heads/main/cookie.json");
-        const json = await res.json();
-        cookieHeader = json.cookieHeader || "";
-        if (!cookieHeader) {
-          throw new Error("cookieHeader not found in JSON");
-        }
-      } catch (err) {
-        console.error("Failed to fetch cookieHeader:", err);
-        return;
-      }
+// Render channel cards
+function renderChannels() {
+  container.innerHTML = "";
+  channels.forEach(ch => {
+    const div = document.createElement("div");
+    div.className = "channel-card";
+    div.innerHTML = `<img src="${ch.logo}" alt="${ch.name}"><div>${ch.name}</div>`;
+    div.onclick = () => playChannel(ch);
+    container.appendChild(div);
+  });
+}
 
-      const video = document.querySelector("video");
-      const player = new shaka.Player();
-      await player.attach(video);
+// Play selected channel
+function playChannel(ch){
+  container.style.display = "none";
+  playerSection.style.display = "block";
+  jwPlayerInstance.setup({
+    file: ch.url,
+    width: "100%",
+    height: "100%",
+    autostart: true,
+    title: ch.name,
+    image: ch.logo,
+    skin: { name: "glow" }
+  });
+}
 
-      const container = document.querySelector(".shaka-video-container");
-      const ui = new shaka.ui.Overlay(player, container, video);
+// Back to channel list
+backBtn.onclick = () => {
+  playerSection.style.display = "none";
+  container.style.display = "grid";
+  jwPlayerInstance.stop();
+}
 
-      ui.configure({
-        controlPanelElements: [
-          'play_pause', 'time_and_duration', 'mute', 'volume',
-          'spacer', 'language', 'captions', 'picture_in_picture',
-          'quality', 'fullscreen'
-        ],
-        volumeBarColors: {
-          base: 'rgba(63, 187, 1, 1)',
-          level: 'rgb(255, 69, 0)'
-        },
-        seekBarColors: {
-          base: 'rgb(41, 41, 163)',
-          buffered: 'rgb(35, 99, 3)',
-          played: 'rgba(63, 187, 1, 1)'
-        }
-      });
+// Initialize
+renderChannels();
+</script>
 
-      const drmConfig = {
-        clearKeys: {
-          "a7712196dbee413ab510c825e5c4d3f0":"1ade126fa6a9162ba34bd5de5b1427ca"
-        }
-      };
-
-      const streamUrl = "https://ottlive.dishhome.com.np/protected/jQTOzZkB0RDJ74Ryniuo/dash/manifest.mpd";
-
-
-      player.configure({
-        drm: drmConfig,
-        streaming: {
-          lowLatencyMode: true,
-          bufferingGoal: 15,
-          rebufferingGoal: 2,
-          bufferBehind: 15,
-          retryParameters: { timeout: 10000, maxAttempts: 5, baseDelay: 300, backoffFactor: 1.2 },
-          segmentRequestTimeout: 8000,
-          segmentPrefetchLimit: 2,
-          useNativeHlsOnSafari: true
-        },
-        manifest: { retryParameters: { timeout: 8000, maxAttempts: 3 } }
-      });
-
-      // ✅ Apply the fetched cookie to stream requests
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        request.headers['Referer'] = 'https://www.jiotv.com/';
-        request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        request.headers['Cookie'] = cookieHeader;
-
-        if (
-          (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-           type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-          request.uris[0] && !request.uris[0].includes('__hdnea=')
-        ) {
-          const separator = request.uris[0].includes('?') ? '&' : '?';
-          request.uris[0] += separator + cookieHeader;
-        }
-      });
-
-      try {
-        await player.load(streamUrl);
-      } catch (error) {
-        console.error("Load error:", error);
-      }
-    });
-  </script>
 </body>
 </html>
