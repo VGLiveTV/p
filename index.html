@@ -1,344 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Star Sports Hindi Channels</title>
-    <meta name="referrer" content="no-referrer">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon fill='red' points='50,10 61,40 94,40 68,60 78,90 50,70 22,90 32,60 6,40 39,40'/></svg>">
-    
-    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/controls.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>𝗗𝗜𝗟𝗟𝗭𝗬</title>
 
-    <style>
-        :root {
-            --bg-dark: #0a0e27;
-            --accent: #00ff9f;
-            --card-bg: rgba(20, 25, 45, 0.9);
-        }
+<style>
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#e9eef3;
+    display:flex;
+    justify-content:center;
+    padding:12px;
+}
+.container{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+.card{
+    background:linear-gradient(135deg,#0d6efd,#0a58ca);
+    border-radius:14px;
+    padding:18px;
+    color:#fff;
+    text-align:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);
+}
+.header{
+    font-size:22px;
+    font-weight:700;
+}
+.video-wrapper{
+    background:#000;
+    border-radius:14px;
+    overflow:hidden;
+    position:relative;
+    padding-top:56.25%;
+    box-shadow: 0 0 0 3px #0d6efd;
+    margin-bottom: 30px;
+}
+.video-wrapper iframe{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    border:0;
+}
+.error-box{
+    display:none;
+    background:#ff4d4d;
+    color:#fff;
+    padding:14px;
+    border-radius:10px;
+    font-weight:500;
+}
+.community h3{
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+.buttons{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+}
+.btn{
+    flex:1;
+    background:transparent;
+    border:2px solid #fff;
+    border-radius:30px;
+    padding:10px;
+    color:#fff;
+    font-weight:600;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:.3s;
+}
+.btn:hover{
+    background:#fff;
+    color:#0d6efd;
+}
+.btn svg{
+    width:18px;
+    height:18px;
+    fill:currentColor;
+}
+.share-btn{
+    background:#fff;
+    color:#0d6efd;
+    border:none;
+    border-radius:10px;
+    padding:12px;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+}
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
-        }
-        
-        body {
-            font-family: 'Archivo', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
-            color: #fff;
-            /* Use 100dvh so mobile browser UI bars don't cover content */
-            min-height: 100dvh; 
-            overflow-x: hidden;
-            /* Prevent pull-to-refresh on mobile */
-            overscroll-behavior-y: none; 
-            /* Support for notched phones */
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
+/* Overlay Backdrop - semi transparent */
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: none;
+    animation: fadeIn 0.3s ease-out forwards;
+}
 
-        /* --- Main Menu (Grid) Styles --- */
-        #grid-view {
-            display: none; 
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding-bottom: 40px; /* Extra padding for bottom swiping on mobile */
-        }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 
-        .header {
-            padding: 40px 20px 20px;
-            text-align: center;
-        }
+/* Modern Telegram Popup - SMALLER VERSION (reduced size, compact padding) */
+.telegram-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    backdrop-filter: blur(25px);
+    border: 1.5px solid rgba(13, 110, 253, 0.2);
+    padding: 1.2rem 1.2rem;
+    border-radius: 24px;
+    z-index: 10000;
+    text-align: center;
+    width: 80%;
+    max-width: 290px;
+    display: none;
+    box-shadow: 0 20px 40px -12px rgba(13, 110, 253, 0.25), 
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    opacity: 0;
+}
 
-        .header h1 {
-            color: var(--accent);
-            text-shadow: 0 0 20px rgba(0, 255, 159, 0.5);
-            margin: 0;
-            font-size: clamp(1.8rem, 5vw, 2.5rem); /* Responsive typography */
-        }
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
 
-        .header p {
-            margin-top: 10px;
-            font-size: clamp(0.9rem, 3vw, 1rem);
-            color: #aaa;
-        }
+.telegram-popup h2 {
+    color: #1e293b;
+    font-size: 1.2rem;
+    margin: 0 0 0.4rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-        }
+.telegram-popup .fa-telegram {
+    color: #2AABEE;
+    font-size: 1.2rem;
+}
 
-        .channel-card {
-            background: var(--card-bg);
-            border: 2px solid rgba(0, 255, 159, 0.2);
-            border-radius: 15px;
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-        }
+.telegram-popup p {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin: 0 0 0.9rem 0;
+    line-height: 1.4;
+    font-weight: 500;
+}
 
-        /* Desktop Hover */
-        @media (hover: hover) {
-            .channel-card:hover {
-                transform: translateY(-8px);
-                border-color: var(--accent);
-                box-shadow: 0 10px 30px rgba(0, 255, 159, 0.2);
-            }
-        }
+.telegram-popup .popup-button {
+    width: 100%;
+    padding: 0.7rem;
+    margin-top: 0.45rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
 
-        /* Mobile Active Touch State */
-        .channel-card:active {
-            transform: scale(0.96);
-            border-color: var(--accent);
-        }
+.telegram-popup .join-btn {
+    background: linear-gradient(135deg, #2AABEE 0%, #1e98d4 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(42, 171, 238, 0.3);
+    margin-top: 0.5rem;
+}
 
-        .logo-box {
-            width: 100%;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
+.telegram-popup .join-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(42, 171, 238, 0.4);
+}
 
-        .logo-box img {
-            max-width: 70%;
-            max-height: 70%;
-            object-fit: contain;
-        }
+.telegram-popup .join-btn:active {
+    transform: translateY(-1px);
+}
 
-        .channel-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
+.telegram-popup .joined-btn {
+    background: rgba(42, 171, 238, 0.08);
+    color: #2AABEE;
+    border: 1.5px solid rgba(42, 171, 238, 0.2);
+    margin-top: 0.5rem;
+}
 
-        .live-badge {
-            background: #ff4757;
-            color: white;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.telegram-popup .joined-btn:hover {
+    background: rgba(42, 171, 238, 0.12);
+    border-color: rgba(42, 171, 238, 0.3);
+}
 
-        /* --- Player View Styles --- */
-        #player-view {
-            display: none;
-            width: 100vw;
-            height: 100dvh; /* dvh ensures controls aren't hidden by mobile Safari/Chrome bottom bars */
-            background: #000;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 100;
-        }
-
-        .shaka-video-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: #000;
-        }
-
-        .custom-watermark {
-            position: absolute;
-            z-index: 40;
-            pointer-events: none;
-            top: 65%;
-            left: 6%;
-            transform: translateY(-50%);
-            font-size: clamp(9px, 2vw, 11px);
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.12);
-        }
-    </style>
+.telegram-popup .joined-btn:active {
+    background: rgba(42, 171, 238, 0.15);
+}
+</style>
+<!-- Font Awesome for Telegram icon only (lightweight) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
+<div class="popup-backdrop" id="popupBackdrop"></div>
+<div class="telegram-popup" id="telegramPopup">
+    <h2><i class="fab fa-telegram"></i> Join The Action</h2>
+    <p>Get instant updates, match highlights & exclusive links</p>
+    <a href="https://t.me/+Mzw8LsvulUNlZTg1" target="_blank" rel="noopener noreferrer" class="popup-button join-btn" id="fixedJoinBtn">Join Channel Now</a>
+    <button class="popup-button joined-btn" onclick="closePopupModal();">I've Already Joined</button>
+</div>
 
-    <div id="grid-view">
-        <div class="header">
-            <h1>📺 Star Sports Channels</h1>
-            <p>Premium Star Sports Hindi Channels</p>
-        </div>
+<div class="container">
 
-        <div class="grid-container">
-            <a href="?channel=ss1h" target="_blank" class="channel-card">
-                <div class="logo-box">
-                    <img src="https://github.com/VGLive/SS1H/blob/main/1.png?raw=true" alt="Star Sports 1 Hindi HD">
-                </div>
-                <div class="channel-name">Star Sports 1 Hindi HD</div>
-                <div class="live-badge">Live</div>
-            </a>
+<div class="card header">
+Coverdrivex
+</div>
 
-            <a href="?channel=ss2h" target="_blank" class="channel-card">
-                <div class="logo-box">
-                    <img src="https://github.com/VGLive/SS2H/blob/main/2.png?raw=true" alt="Star Sports 2 Hindi HD">
-                </div>
-                <div class="channel-name">Star Sports 2 Hindi HD</div>
-                <div class="live-badge">Live</div>
-            </a>
+<div class="video-wrapper">
+    <div id="player-container"></div>
+</div>
 
-            <a href="?channel=ss1" target="_blank" class="channel-card">
-                <div class="logo-box">
-                    <img src="https://github.com/VGLive/SS1/blob/main/1.png?raw=true" alt="Star Sports 1 HD">
-                </div>
-                <div class="channel-name">Star Sports 1 Hindi</div>
-                <div class="live-badge">Live</div>
-            </a>
+<div id="errorBox" class="error-box">
+Invalid or unavailable stream ID.
+</div>
 
-            <a href="?channel=ss2" target="_blank" class="channel-card">
-                <div class="logo-box">
-                    <img src="https://github.com/VGLive/SS2/blob/main/2.png?raw=true" alt="Star Sports 2 HD">
-                </div>
-                <div class="channel-name">Star Sports 2 Hindi</div>
-                <div class="live-badge">Live</div>
-            </a>
-        </div>
-    </div>
+<div class="card community">
+<h3>
+Join our community for live updates!
+</h3>
 
-    <div id="player-view">
-        <div class="shaka-video-container" id="player-container">
-            <video id="video" autoplay muted playsinline preload="metadata"></video>
-            <div class="custom-watermark"> </div>
-        </div>
-    </div>
+<div class="buttons">
+<a href="https://t.me/+Ux-RG8vVWwE5MjI1" class="btn">
+<svg viewBox="0 0 24 24">
+<path d="M9.04 15.47l-.4 5.65c.57 0 .82-.25 1.13-.55l2.72-2.6 5.64 4.13c1.03.57 1.76.27 2.04-.95l3.7-17.37c.36-1.65-.6-2.3-1.6-1.92L1.66 9.74c-1.58.61-1.55 1.5-.27 1.9l5.58 1.74L19.46 5.6c.58-.36 1.1-.16.67.2"/>
+</svg>
+Telegram
+</a>
+</div>
+</div>
 
-    <script>
-        // Channel Data Configuration
-        const channels = {
-            ss1h: {
-                title: "Star Sports 1 Hindi HD",
-                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd",
-                keyId: "400131994b445d8c8817202248760fda",
-                key: "2d56cb6f07a75b9aff165d534ae2bfc4"
-            },
-            ss2h: {
-                title: "Star Sports 2 Hindi HD",
-                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSportsHD2Hin_BTS/output/index.mpd",
-                keyId: "bd1ea6a1c1fb5dcdb709434e0826bbc0",
-                key: "f57f22cba32739ce7beb1fab3f3d060b"
-            },
-            ss1: {
-                title: "Star Sports 1 Hindi",
-                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/Star_Sports_1_Hindi_BTS/output/index.mpd",
-                keyId: "8ea9b607549252068e260a5f4d7dd321",
-                key: "350c0aaffedf51cc1502e9543c7c885e"
-            },
-            ss2: {
-                title: "Star Sports 2 Hindi",
-                streamUrl: "https://jiotvmblive.cdn.jio.com//bpk-tv/StarSports2Hin_BTS/output/index.mpd",
-                keyId: "a3ed8dc0e0cb5d238da80ee0a85bd2e1",
-                key: "67a96992e6406606f3480ab58d7f540c"
-            }
-        };
+<div class="card">
+<h3>Copy Link & Open In Chrome Browser Only</h3>
+<button class="share-btn" id="shareBtn">Share This Page Link</button>
+</div>
 
-        const cookieUrl = "https://raw.githubusercontent.com/vaathala00/jow/main/output.json";
+</div>
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentChannelId = urlParams.get('channel');
+<script>
 
-            if (currentChannelId && channels[currentChannelId]) {
-                document.getElementById('player-view').style.display = 'block';
-                document.title = channels[currentChannelId].title;
-                await initPlayer(channels[currentChannelId]);
-            } else {
-                document.getElementById('grid-view').style.display = 'flex';
-            }
-        });
+document.addEventListener("DOMContentLoaded",function(){
 
-        async function initPlayer(config) {
-            shaka.polyfill.installAll();
-            if (!shaka.Player.isBrowserSupported()) {
-                alert("Browser not supported for video streaming.");
-                return;
-            }
+// GET ID PARAM
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
 
-            const video = document.getElementById("video");
-            const container = document.getElementById("player-container");
+const playerContainer=document.getElementById("player-container");
+const errorBox=document.getElementById("errorBox");
 
-            video.muted = true;
+if(!id){
+    errorBox.style.display="block";
+    return;
+}
 
-            const player = new shaka.Player(video);
-            const ui = new shaka.ui.Overlay(player, container, video);
+// FETCH JSON
+fetch("https://allrounderid2.pages.dev/id.json")
+.then(res=>res.json())
+.then(data=>{
 
-            ui.configure({
-                addBigPlayButton: true,
-                // Simplified controls work best on smaller mobile screens
-                controlPanelElements: ["play_pause", "mute", "volume", "spacer", "quality", "fullscreen"],
-                seekBarColors: { base: "rgba(255,255,255,0.3)", buffered: "rgba(255,255,255,0.6)", played: "#00ff9f" }
-            });
+if(!data.iframes || !Array.isArray(data.iframes)){
+    errorBox.style.display="block";
+    return;
+}
 
-            let cookieValue = "";
-            try {
-                const response = await fetch(cookieUrl, { cache: "no-store" });
-                const rawText = await response.text();
-                const match = rawText.match(/__hdnea__=[A-Za-z0-9~=/*_-]+/);
-                if (match) cookieValue = match[0];
-            } catch (e) {
-                console.error("Failed to fetch cookie:", e);
-            }
+const match=data.iframes.find(item=>item.id===id);
 
-            player.getNetworkingEngine().registerRequestFilter((type, request) => {
-                if (cookieValue) {
-                    let urlCookie = cookieValue.startsWith("__hdnea__=") ? cookieValue.substring(10) : cookieValue;
-                    if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || 
-                         type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && 
-                         !request.uris[0].includes("__hdnea__")) {
-                        const sep = request.uris[0].includes("?") ? "&" : "?";
-                        request.uris[0] += sep + "__hdnea__=" + urlCookie;
-                    }
-                }
-            });
+if(match && match.iframeSrc){
+    playerContainer.innerHTML=`
+        <iframe 
+            src="${match.iframeSrc}" 
+            allow="encrypted-media; autoplay" 
+            allowfullscreen>
+        </iframe>
+    `;
+}else{
+    errorBox.style.display="block";
+}
 
-            player.configure({
-                drm: { clearKeys: { [config.keyId]: config.key } },
-                manifest: { defaultPresentationDelay: 5 },
-                streaming: {
-                    lowLatencyMode: true,
-                    bufferingGoal: 10,
-                    rebufferingGoal: 2,
-                    safeSeekOffset: 5
-                }
-            });
+})
+.catch(()=>{
+errorBox.style.display="block";
+});
 
-            try {
-                await player.load(config.streamUrl);
-                video.play().catch(() => {});
-            } catch (e) {
-                console.error("Error loading stream", e);
-            }
+document.getElementById("shareBtn").onclick=function(){
+navigator.clipboard.writeText(window.location.href)
+.then(()=>alert("Link Copied"));
+};
 
-            video.addEventListener("play", () => {
-                video.muted = false;
-            }, { once: true });
-        }
-    </script>
+});
+
+// Show popup after delay (unchanged behavior, but popup size is now smaller)
+setTimeout(() => {
+    const popup = document.getElementById('telegramPopup');
+    const backdrop = document.getElementById('popupBackdrop');
+    if(popup && backdrop) {
+        popup.style.display = 'block';
+        backdrop.style.display = 'block';
+    }
+}, 2000);
+
+// Function to close popup modal (keeps original behavior)
+function closePopupModal() {
+    const popup = document.getElementById('telegramPopup');
+    const backdrop = document.getElementById('popupBackdrop');
+    if(popup) popup.style.display = 'none';
+    if(backdrop) backdrop.style.display = 'none';
+}
+
+// Close popup when clicking on backdrop
+const backdropEl = document.getElementById('popupBackdrop');
+if(backdropEl) {
+    backdropEl.addEventListener('click', closePopupModal);
+}
+
+
+ "https://t.me/+Mzw8LsvulUNlZTg1"
+// No extra changes to any other logic, just adjusted popup dimensions & padding.
+</script>
+
 </body>
-</html>
+  </html>
