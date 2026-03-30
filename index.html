@@ -23,10 +23,12 @@
             box-shadow: 0 4px 20px -10px rgba(220,38,38,0.1);
         }
         
-        .logo-area { display: flex; align-items: center; gap: 10px; flex-shrink: 0; white-space: nowrap; }
-        .logo-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--red); }
-        .logo-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--red); display: flex; align-items: center; }
+        /* Left Side */
+        .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; white-space: nowrap; }
+        .logo-icon { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--red); }
+        .logo-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--red); display: flex; align-items: center; }
         
+        /* Right Side */
         .actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
 
         .filter, .search { background: var(--card); border: 1px solid var(--border); border-radius: 16px; outline: none; transition: 0.3s; }
@@ -57,9 +59,9 @@
         @media (max-width: 650px) {
             .app { padding: 0 0.5rem 1.5rem; }
             .header { padding: 1rem 0; gap: 8px; flex-wrap: nowrap; }
-            .logo-area { gap: 6px; }
-            .logo-icon { width: 30px; height: 30px; font-size: 1.2rem; }
-            .logo-text h1 { font-size: 1.1rem; }
+            .logo-area { gap: 8px; }
+            .logo-icon { width: 40px; height: 40px; font-size: 1.5rem; }
+            .logo-text h1 { font-size: 1.4rem; }
             .actions { gap: 6px; flex: 1; justify-content: flex-end; }
             .filter { padding: 0.4rem 1.6rem 0.4rem 0.6rem; font-size: 0.8rem; width: auto; max-width: 110px; background-position: right 6px center; background-size: 0.8em; border-radius: 12px; }
             .search { padding: 0.4rem 0.8rem; border-radius: 12px; max-width: 140px; }
