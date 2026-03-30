@@ -15,20 +15,17 @@
         body { background: radial-gradient(circle at top left, #fee2e2, #fef2f2); min-height: 100vh; color: var(--text); }
         .app { max-width: 1400px; margin: 0 auto; padding: 0 1rem 1.5rem; }
 
+        /* Background, blur, and borders removed */
         .header {
-            position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            position: sticky; top: 0; z-index: 100; background: transparent;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 1.2rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);
-            box-shadow: 0 4px 20px -10px rgba(220,38,38,0.1);
+            padding: 1.2rem 0; margin-bottom: 1.5rem;
         }
         
-        /* Left Side */
-        .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; white-space: nowrap; }
+        .logo-area { display: flex; align-items: center; gap: 10px; flex-shrink: 0; white-space: nowrap; }
         .logo-icon { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--red); }
         .logo-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--red); display: flex; align-items: center; }
         
-        /* Right Side */
         .actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
 
         .filter, .search { background: var(--card); border: 1px solid var(--border); border-radius: 16px; outline: none; transition: 0.3s; }
@@ -95,18 +92,14 @@
 
         try {
             const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
-            
-            // Parse and normalize categories WITHOUT sorting the channels alphabetically
             channels = (await res.json()).map(c => {
                 c._cat = (c.category || c.group || c.group_title || c['group-title'] || c.Category || '').trim();
                 return c;
             });
 
-            // Count categories
             const counts = {};
             channels.forEach(c => { if(c._cat) counts[c._cat] = (counts[c._cat] || 0) + 1; });
 
-            // Populate Dropdown (Categories remain sorted so the menu is usable)
             elCat.innerHTML = `<option value="All">All (${channels.length})</option>` + 
                 Object.keys(counts).sort().map(k => `<option value="${k}">${k} (${counts[k]})</option>`).join('');
 
