@@ -6,6 +6,10 @@
     <title>JioTv+ Player</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.20/dist/controls.css"/>
+
     <style>
         :root {
             --bg-color: #0f172a;
@@ -27,7 +31,11 @@
             min-height: 100vh;
             padding: 1.5rem 1rem;
             color: var(--text-main);
+            /* Prevent body scroll when modal is open */
+            overflow-x: hidden; 
         }
+        
+        body.modal-open { overflow: hidden; }
 
         .app { max-width: 1400px; margin: 0 auto; }
 
@@ -91,23 +99,42 @@
 
         .card-name { font-weight: 600; font-size: 0.85rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
 
-        /* Modal */
+        /* Video Modal */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
             display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);
         }
         
-        .modal-overlay.show { display: flex; }
+        .modal-overlay.show { display: flex; flex-direction: column; }
         
-        .modal-card {
-            background: #1e293b; width: 90%; max-width: 400px; border-radius: 24px;
-            padding: 2rem; border: 1px solid rgba(255,255,255,0.1); text-align: center;
+        .modal-header {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 2rem; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            position: absolute; top: 0; left: 0; z-index: 1010;
         }
 
-        .play-btn {
-            display: flex; align-items: center; justify-content: center; width: 100%;
-            padding: 1rem; background: var(--accent-color); color: #0f172a;
-            border-radius: 16px; font-weight: 700; text-decoration: none; gap: 10px;
+        #modalChannelName {
+            font-size: 1.2rem; font-weight: 700; color: #fff;
+        }
+
+        #closeModalBtn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; width: 40px; height: 40px; border-radius: 50%;
+            cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        
+        #closeModalBtn:hover { background: #ef4444; border-color: #ef4444; }
+
+        /* Shaka Player Container inside Modal */
+        .shaka-video-container {
+            width: 100%; max-width: 1200px; height: 80vh; 
+            max-height: 800px; background: #000; display: flex;
+            align-items: center; justify-content: center; position: relative;
+        }
+        
+        .shaka-video-container video {
+            width: 100%; height: 100%; object-fit: contain; background: #000;
         }
 
         .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
@@ -116,6 +143,8 @@
             .header-actions { width: 100%; justify-content: space-between; margin-top: 10px; }
             .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
+            .shaka-video-container { height: 100vh; max-height: none; } /* Full screen on mobile */
+            .modal-header { padding: 1rem; }
         }
     </style>
 </head>
@@ -138,10 +167,13 @@
     <div id="channelGrid" class="channel-grid"></div>
     
     <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-card">
-            <div id="modalChannelName" style="font-size:1.5rem; font-weight:800; margin-bottom:1.5rem; color: #fff;">Channel</div>
-            <a href="#" class="play-btn" id="playLink"><i class="fas fa-play"></i> Watch Now</a>
-            <button id="closeModalBtn" style="margin-top:1.5rem; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 1rem;">Cancel</button>
+        <div class="modal-header">
+            <div id="modalChannelName">Channel</div>
+            <button id="closeModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="shaka-video-container" id="player-container">
+            <video id="video" autoplay muted playsinline preload="metadata"></video>
         </div>
     </div>
 </div>
@@ -149,19 +181,22 @@
 <script>
     (function(){
         let allChannels = [];
+        let currentPlayer = null; // Store player instance
 
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
         const modalOverlay = document.getElementById('modalOverlay');
+        const videoElement = document.getElementById('video');
+        const containerElement = document.getElementById('player-container');
+
+        // Ensure Shaka polyfills are installed
+        shaka.polyfill.installAll();
 
         async function loadData() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json');
                 const rawData = await res.json();
-                
-                // Flexible mapping in case the JSON wraps the array in an object
                 allChannels = Array.isArray(rawData) ? rawData : (rawData.channels || rawData.data || []);
-                
                 filterAndRender();
             } catch (e) { 
                 grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
@@ -185,7 +220,6 @@
             }
 
             grid.innerHTML = filtered.map(ch => {
-                // Extracting your specific JSON structure keys safely
                 const cName = ch.name || 'Unknown Channel';
                 const cLogo = ch.logo || 'https://via.placeholder.com/80';
                 const cUrl = ch.url || '';
@@ -193,36 +227,112 @@
                 const cKey = ch.key || '';
                 const cCookie = ch.cookie || '';
                 
-                // Escape quotes to prevent HTML breaking
                 const safeName = cName.replace(/'/g, "\\'");
                 
+                // Clicking passes data directly to initializePlayer
                 return `
-                <div class="channel-card" onclick="openModal('${safeName}', '${cUrl}', '${cKeyId}', '${cKey}', '${cCookie}')">
+                <div class="channel-card" onclick="openAndPlay('${safeName}', '${cUrl}', '${cKeyId}', '${cKey}', '${cCookie}')">
                     <div class="card-logo"><img src="${cLogo}" loading="lazy" alt="logo" onerror="this.src='https://via.placeholder.com/80'"></div>
                     <div class="card-name">${cName}</div>
                 </div>
             `}).join('');
         }
 
-        // Updated openModal to accept DRM and Cookie parameters
-        window.openModal = (name, url, keyId, key, cookie) => {
+        // --- Shaka Player Logic ---
+        
+        window.openAndPlay = async (name, url, keyId, key, cookie) => {
+            if (!shaka.Player.isBrowserSupported()) {
+                alert("Your browser does not support Shaka Player.");
+                return;
+            }
+
+            // UI Setup
             document.getElementById('modalChannelName').textContent = name;
-            
-            // CONSTRUCT PLAYER URL:
-            // Change "player.html" to whatever page or intent actually handles the playback in your environment.
-            // This safely encodes the MPD url, DRM keys, and cookies into the link.
-            const playUrl = `player.html?url=${encodeURIComponent(url)}&keyid=${encodeURIComponent(keyId)}&key=${encodeURIComponent(key)}&cookie=${encodeURIComponent(cookie)}`;
-            
-            document.getElementById('playLink').href = playUrl;
             modalOverlay.classList.add('show');
+            document.body.classList.add('modal-open');
+            videoElement.muted = true; // start muted for autoplay policy
+
+            // Initialize Player
+            currentPlayer = new shaka.Player();
+            await currentPlayer.attach(videoElement);
+            
+            // Initialize UI Overlay
+            const ui = new shaka.ui.Overlay(currentPlayer, containerElement, videoElement);
+            ui.configure({
+                addBigPlayButton: true,
+                controlPanelElements: [  
+                    'play_pause', 'time_and_duration', 'mute', 'volume',  
+                    'spacer', 'language', 'picture_in_picture',  
+                    'quality', 'fullscreen'  
+                ],  
+                seekBarColors: { base: 'white', buffered: 'red', played: '#38bdf8' }
+            });  
+
+            // Configure DRM and Streaming properties
+            let playerConfig = {
+                manifest: { defaultPresentationDelay: 5 },
+                streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
+            };
+
+            // Inject DRM if keys are present
+            if (keyId && key) {
+                playerConfig.drm = { clearKeys: { [keyId]: key } };
+            }
+            currentPlayer.configure(playerConfig);
+
+            // Inject Cookie Filter if present
+            if (cookie) {
+                let urlCookie = cookie.startsWith("__hdnea__=") ? cookie.substring(10) : cookie;
+                currentPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
+                    if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+                         type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
+                        !request.uris[0].includes("__hdnea__")) {
+                        const sep = request.uris[0].includes("?") ? "&" : "?";
+                        request.uris[0] += sep + "__hdnea__=" + urlCookie;
+                    }
+                });
+            }
+
+            // Load Video
+            try {
+                await currentPlayer.load(url);
+                videoElement.play().catch(()=>{});
+            } catch(e) {
+                console.error("Error loading stream:", e);
+                alert("Failed to play the stream.");
+            }
+
+            // Unmute once playing starts
+            videoElement.addEventListener("play", () => {
+                videoElement.muted = false;
+            }, { once: true });
         };
 
-        document.getElementById('closeModalBtn').onclick = () => modalOverlay.classList.remove('show');
+        // Close Modal and Destroy Player
+        function closePlayer() {
+            modalOverlay.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            
+            if (currentPlayer) {
+                // Unload stream and destroy player to save resources
+                currentPlayer.unload();
+                currentPlayer.destroy();
+                currentPlayer = null;
+            }
+            
+            // Clean up UI Overlay elements attached to DOM
+            const uiContainers = document.querySelectorAll('.shaka-ui-overlay');
+            uiContainers.forEach(container => container.remove());
+        }
+
+        document.getElementById('closeModalBtn').onclick = closePlayer;
         
+        // Close on background click
         modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+            if (e.target === modalOverlay) closePlayer();
         });
 
+        // Search debounce
         let searchTimer;
         searchInput.oninput = () => {
             clearTimeout(searchTimer);
