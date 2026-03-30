@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>JioTv+ Player</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,11 +31,10 @@
             min-height: 100vh;
             padding: 1.5rem 1rem;
             color: var(--text-main);
-            /* Prevent body scroll when modal is open */
             overflow-x: hidden; 
         }
         
-        body.modal-open { overflow: hidden; }
+        body.modal-open { overflow: hidden; } /* Prevents background scrolling when video is playing */
 
         .app { max-width: 1400px; margin: 0 auto; }
 
@@ -87,7 +86,11 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
-        .channel-card:hover { transform: translateY(-5px); background: rgba(30, 41, 59, 0.9); border-color: rgba(56, 189, 248, 0.4);}
+        .channel-card:hover { 
+            transform: translateY(-5px); 
+            background: rgba(30, 41, 59, 0.9); 
+            border-color: rgba(56, 189, 248, 0.4);
+        }
 
         .card-logo {
             width: 80px; height: 80px; margin-bottom: 12px;
@@ -113,9 +116,7 @@
             position: absolute; top: 0; left: 0; z-index: 1010;
         }
 
-        #modalChannelName {
-            font-size: 1.2rem; font-weight: 700; color: #fff;
-        }
+        #modalChannelName { font-size: 1.2rem; font-weight: 700; color: #fff; }
 
         #closeModalBtn {
             background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -181,8 +182,9 @@
 <script>
     (function(){
         let allChannels = [];
-        let currentPlayer = null; // Store player instance
+        let currentPlayer = null;
 
+        // DOM Elements
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
         const modalOverlay = document.getElementById('modalOverlay');
@@ -192,44 +194,69 @@
         // Ensure Shaka polyfills are installed
         shaka.polyfill.installAll();
 
+        // 1. Fetch and Parse JSON Data
         async function loadData() {
             try {
-                const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json');
+                const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/main/stream.json');
                 const rawData = await res.json();
-                allChannels = Array.isArray(rawData) ? rawData : (rawData.channels || rawData.data || []);
+                
+                // Aggressive Array Extraction
+                if (Array.isArray(rawData)) {
+                    allChannels = rawData;
+                } else if (typeof rawData === 'object' && rawData !== null) {
+                    // Try common keys
+                    allChannels = rawData.channels || rawData.data || rawData.streams || rawData.results || [];
+                    // Fallback: Find the first array in the object
+                    if (allChannels.length === 0) {
+                        for (let key in rawData) {
+                            if (Array.isArray(rawData[key])) {
+                                allChannels = rawData[key];
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // If it's just a single object instead of an array, wrap it
+                if (allChannels.length === 0 && !Array.isArray(rawData) && Object.keys(rawData).length > 0) {
+                     allChannels = [rawData];
+                }
+
                 filterAndRender();
             } catch (e) { 
-                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
+                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check internet connection.</div>`; 
+                console.error("Fetch Error:", e);
             }
         }
 
+        // 2. Render Grid and Handle Search
         function filterAndRender() {
             const query = searchInput.value.toLowerCase().trim();
             let filtered = allChannels;
 
             if (query) {
                 filtered = allChannels.filter(ch => {
-                    const cName = ch.name || ch.title || '';
-                    return cName.toLowerCase().includes(query);
+                    const cName = ch["channel name"] || ch.name || ch.title || ch.channel_name || '';
+                    return String(cName).toLowerCase().includes(query);
                 });
             }
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-box">No channels found.</div>';
+                grid.innerHTML = '<div class="empty-box">No channels found. Please check if stream.json is formatted correctly.</div>';
                 return;
             }
 
             grid.innerHTML = filtered.map(ch => {
-                const cName = ch.name || 'Unknown Channel';
-                const cLogo = ch.logo || 'https://via.placeholder.com/80';
-                const cUrl = ch.url || '';
-                const cKeyId = ch['key id'] || ch.key_id || ch.keyId || '';
-                const cKey = ch.key || '';
-                const cCookie = ch.cookie || '';
+                // Property mapping specifically targeting your JSON format
+                const cName = ch["channel name"] || ch.name || ch.title || ch.channel_name || 'Unknown Channel';
+                const cLogo = ch["channel logo"] || ch.logo || ch.image || ch.channel_logo || 'https://via.placeholder.com/80';
+                const cUrl = ch["channel url"] || ch.url || ch.link || ch.stream_url || '';
+                const cKeyId = ch["channel key id"] || ch["key id"] || ch.key_id || ch.keyId || '';
+                const cKey = ch["channel key"] || ch.key || ch.channel_key || '';
+                const cCookie = ch["channel cookie"] || ch.cookie || ch.channel_cookie || '';
                 
-                const safeName = cName.replace(/'/g, "\\'");
+                const safeName = String(cName).replace(/'/g, "\\'");
                 
-                // Clicking passes data directly to initializePlayer
                 return `
                 <div class="channel-card" onclick="openAndPlay('${safeName}', '${cUrl}', '${cKeyId}', '${cKey}', '${cCookie}')">
                     <div class="card-logo"><img src="${cLogo}" loading="lazy" alt="logo" onerror="this.src='https://via.placeholder.com/80'"></div>
@@ -238,15 +265,14 @@
             `}).join('');
         }
 
-        // --- Shaka Player Logic ---
-        
+        // 3. Shaka Player Initialization & Playback Logic
         window.openAndPlay = async (name, url, keyId, key, cookie) => {
             if (!shaka.Player.isBrowserSupported()) {
                 alert("Your browser does not support Shaka Player.");
                 return;
             }
 
-            // UI Setup
+            // Prepare Modal UI
             document.getElementById('modalChannelName').textContent = name;
             modalOverlay.classList.add('show');
             document.body.classList.add('modal-open');
@@ -268,19 +294,19 @@
                 seekBarColors: { base: 'white', buffered: 'red', played: '#38bdf8' }
             });  
 
-            // Configure DRM and Streaming properties
+            // Player Configuration (DRM + Buffering limits)
             let playerConfig = {
                 manifest: { defaultPresentationDelay: 5 },
                 streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
             };
 
-            // Inject DRM if keys are present
+            // Inject ClearKey DRM if available
             if (keyId && key) {
                 playerConfig.drm = { clearKeys: { [keyId]: key } };
             }
             currentPlayer.configure(playerConfig);
 
-            // Inject Cookie Filter if present
+            // Inject Auth Cookie Filter if available
             if (cookie) {
                 let urlCookie = cookie.startsWith("__hdnea__=") ? cookie.substring(10) : cookie;
                 currentPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
@@ -293,7 +319,7 @@
                 });
             }
 
-            // Load Video
+            // Load and Play
             try {
                 await currentPlayer.load(url);
                 videoElement.play().catch(()=>{});
@@ -302,43 +328,42 @@
                 alert("Failed to play the stream.");
             }
 
-            // Unmute once playing starts
+            // Unmute once playing successfully starts
             videoElement.addEventListener("play", () => {
                 videoElement.muted = false;
             }, { once: true });
         };
 
-        // Close Modal and Destroy Player
+        // 4. Destroy Player & Close Modal
         function closePlayer() {
             modalOverlay.classList.remove('show');
             document.body.classList.remove('modal-open');
             
             if (currentPlayer) {
-                // Unload stream and destroy player to save resources
                 currentPlayer.unload();
                 currentPlayer.destroy();
                 currentPlayer = null;
             }
             
-            // Clean up UI Overlay elements attached to DOM
+            // Clean up dynamically injected UI Overlay elements
             const uiContainers = document.querySelectorAll('.shaka-ui-overlay');
             uiContainers.forEach(container => container.remove());
         }
 
+        // Event Listeners for Closing
         document.getElementById('closeModalBtn').onclick = closePlayer;
-        
-        // Close on background click
         modalOverlay.addEventListener('click', (e) => {
             if (e.target === modalOverlay) closePlayer();
         });
 
-        // Search debounce
+        // 5. Search Debounce
         let searchTimer;
         searchInput.oninput = () => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(filterAndRender, 300);
         };
 
+        // Initialize App
         loadData();
     })();
 </script>
