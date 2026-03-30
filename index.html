@@ -10,12 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --card-border: rgba(148, 163, 184, 0.1);
-            --accent-color: #38bdf8;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            /* Red Theme Colors */
+            --bg-color: #000000;
+            --card-bg: rgba(25, 25, 25, 0.8);
+            --card-border: rgba(229, 9, 20, 0.15);
+            --accent-color: #e50914; /* Bright Red */
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
         }
 
         * {
@@ -25,10 +26,10 @@
         }
 
         body {
-            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            /* Deep red to black gradient */
+            background: radial-gradient(circle at top left, #3a0000, #000000);
             min-height: 100vh;
             color: var(--text-main);
-            /* Removed body padding so the sticky header sits perfectly flush with the top */
         }
 
         .app { 
@@ -42,14 +43,14 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(15, 23, 42, 0.95); /* Dark enough to hide scrolling content */
+            background: rgba(0, 0, 0, 0.95); /* Solid black glass for header */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
             gap: 1rem; 
-            padding: 1.2rem 0; /* Internal padding keeps it spaced out */
+            padding: 1.2rem 0; 
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--card-border);
         }
 
         .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -62,7 +63,7 @@
 
         .logo-text h1 {
             font-size: 1.4rem; font-weight: 800;
-            background: linear-gradient(to right, #fff, #94a3b8);
+            background: linear-gradient(to right, #fff, #ffb3b3);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
@@ -80,7 +81,8 @@
             font-size: 0.9rem;
             appearance: none;
             -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            /* Updated dropdown arrow to match muted color */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 1em;
@@ -90,15 +92,18 @@
             white-space: nowrap;
         }
 
-        .custom-filter:focus { border-color: var(--accent-color); }
-        .custom-filter option { background: var(--bg-color); color: var(--text-main); }
+        .custom-filter:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(229, 9, 20, 0.3); }
+        .custom-filter option { background: #111; color: var(--text-main); }
 
         .search-wrapper {
             display: flex; align-items: center; background: var(--card-bg);
             border-radius: 16px; padding: 0.5rem 1rem; border: 1px solid var(--card-border);
             width: min(320px, 100%); flex: 1; max-width: 250px;
+            transition: 0.3s;
         }
         
+        .search-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(229, 9, 20, 0.3); }
+
         .search-wrapper input {
             background: transparent; border: none; outline: none;
             width: 100%; color: white; padding-right: 10px; flex: 1; min-width: 0;
@@ -118,12 +123,19 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
-        .channel-card:hover { transform: translateY(-5px); background: rgba(30, 41, 59, 0.9); border-color: rgba(56, 189, 248, 0.4);}
+        /* Red hover effect */
+        .channel-card:hover { 
+            transform: translateY(-5px); 
+            background: rgba(35, 15, 15, 0.9); 
+            border-color: rgba(229, 9, 20, 0.6);
+            box-shadow: 0 10px 20px -5px rgba(229, 9, 20, 0.2);
+        }
 
         .card-logo {
             width: 80px; height: 80px; margin-bottom: 12px;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(15, 23, 42, 0.6); border-radius: 18px; padding: 8px;
+            background: rgba(0, 0, 0, 0.6); border-radius: 18px; padding: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         
         .card-logo img { max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; }
