@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VG TV</title>
+    <title>JioTv+ Player</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,27 +25,33 @@
         body {
             background: radial-gradient(circle at top left, #1e293b, #0f172a);
             min-height: 100vh;
-            padding: 1.5rem 1rem;
             color: var(--text-main);
         }
 
-        .app { max-width: 1400px; margin: 0 auto; }
+        .app { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 0 1rem 1.5rem 1rem; 
+        }
 
-        /* Header */
+        /* Header (Frozen/Sticky) */
         .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-            gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem;
+            gap: 1rem; padding: 1rem 0; margin-bottom: 2rem;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
         .logo-icon {
-            background: linear-gradient(135deg, #38bdf8, #3b82f6);
             width: 45px; height: 45px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; color: white;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+            font-size: 1.8rem; color: var(--accent-color);
             transition: 0.3s;
         }
 
@@ -53,7 +59,16 @@
             font-size: 1.4rem; font-weight: 800;
             background: linear-gradient(to right, #fff, #94a3b8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            transition: 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .channel-count {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            -webkit-text-fill-color: var(--text-muted); /* Overrides gradient for the span */
+            background: none;
+            margin-top: 2px;
         }
 
         .header-actions { display: flex; align-items: center; gap: 12px; }
@@ -66,7 +81,11 @@
         
         .search-wrapper input {
             background: transparent; border: none; outline: none;
-            width: 100%; color: white; padding-left: 10px;
+            width: 100%; color: white; padding-right: 10px; flex: 1;
+        }
+
+        .search-wrapper i {
+            color: var(--text-muted);
         }
 
         /* Grid */
@@ -98,17 +117,13 @@
         /* Mobile Adjustments */
         @media (max-width: 600px) {
             .header {
-                flex-wrap: nowrap; /* Forces items to stay on the same line */
-                gap: 10px;
+                flex-wrap: nowrap; gap: 10px;
             }
             .header-actions {
-                width: auto;
-                flex: 1; /* Allows search box to take remaining space */
-                margin-top: 0;
+                width: auto; flex: 1; margin-top: 0;
             }
             .search-wrapper {
-                width: 100%;
-                padding: 0.4rem 0.8rem;
+                width: 100%; padding: 0.4rem 0.8rem;
             }
             .channel-grid { 
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
@@ -116,9 +131,8 @@
             .card-logo { 
                 width: 60px; height: 60px; 
             }
-            /* Shrink logo slightly to fit search bar perfectly */
             .logo-icon { 
-                width: 38px; height: 38px; font-size: 1.2rem; 
+                width: 35px; height: 35px; font-size: 1.4rem; 
             }
             .logo-text h1 { 
                 font-size: 1.2rem; 
@@ -131,13 +145,15 @@
 <div class="app">
     <header class="header">
         <div class="logo-area">
-            <div class="logo-icon"><i class="fa-solid fa-tv"></i></div>
-            <div class="logo-text"><h1>VG TV</h1></div>
+            <div class="logo-icon"><i class="fas fa-tv"></i></div>
+            <div class="logo-text">
+                <h1>JioTV+ <span id="channelCount" class="channel-count"></span></h1>
+            </div>
         </div>
         <div class="header-actions">
             <div class="search-wrapper">
-                <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search channels...">
+                <i class="fas fa-search"></i>
             </div>
         </div>
     </header>
@@ -151,11 +167,20 @@
 
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
+        const countDisplay = document.getElementById('channelCount');
 
         async function loadData() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
                 allChannels = await res.json();
+                
+                // Sort channels alphabetically by name
+                allChannels.sort((a, b) => {
+                    const nameA = a.name ? a.name.toLowerCase() : '';
+                    const nameB = b.name ? b.name.toLowerCase() : '';
+                    return nameA.localeCompare(nameB);
+                });
+
                 filterAndRender();
             } catch (e) { 
                 grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
@@ -169,6 +194,9 @@
             if (query) {
                 filtered = allChannels.filter(ch => ch.name && ch.name.toLowerCase().includes(query));
             }
+
+            // Update the channel count text
+            countDisplay.textContent = `(${filtered.length})`;
 
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="empty-box">No channels found.</div>';
