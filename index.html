@@ -10,13 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Red Theme Colors */
-            --bg-color: #000000;
-            --card-bg: rgba(25, 25, 25, 0.8);
-            --card-border: rgba(229, 9, 20, 0.15);
-            --accent-color: #e50914; /* Bright Red */
-            --text-main: #ffffff;
-            --text-muted: #b3b3b3;
+            /* Light Red Theme Colors */
+            --bg-color: #fef2f2;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(220, 38, 38, 0.2);
+            --accent-color: #dc2626; /* Solid Red */
+            --text-main: #1e293b; /* Dark text for readability */
+            --text-muted: #64748b;
         }
 
         * {
@@ -26,8 +26,8 @@
         }
 
         body {
-            /* Deep red to black gradient */
-            background: radial-gradient(circle at top left, #3a0000, #000000);
+            /* Soft light red gradient */
+            background: radial-gradient(circle at top left, #fee2e2, #fef2f2);
             min-height: 100vh;
             color: var(--text-main);
         }
@@ -43,7 +43,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(0, 0, 0, 0.95); /* Solid black glass for header */
+            background: rgba(255, 255, 255, 0.95); /* Light glass effect */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -51,6 +51,7 @@
             padding: 1.2rem 0; 
             margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px -10px rgba(220, 38, 38, 0.1);
         }
 
         .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -63,8 +64,15 @@
 
         .logo-text h1 {
             font-size: 1.4rem; font-weight: 800;
-            background: linear-gradient(to right, #fff, #ffb3b3);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            color: var(--accent-color); /* Solid Red Text */
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .channel-count {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
         .header-actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
@@ -81,8 +89,8 @@
             font-size: 0.9rem;
             appearance: none;
             -webkit-appearance: none;
-            /* Updated dropdown arrow to match muted color */
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            /* Red dropdown arrow */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 1em;
@@ -92,8 +100,8 @@
             white-space: nowrap;
         }
 
-        .custom-filter:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(229, 9, 20, 0.3); }
-        .custom-filter option { background: #111; color: var(--text-main); }
+        .custom-filter:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(220, 38, 38, 0.2); }
+        .custom-filter option { background: #ffffff; color: var(--text-main); }
 
         .search-wrapper {
             display: flex; align-items: center; background: var(--card-bg);
@@ -102,14 +110,15 @@
             transition: 0.3s;
         }
         
-        .search-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(229, 9, 20, 0.3); }
+        .search-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(220, 38, 38, 0.2); }
 
         .search-wrapper input {
             background: transparent; border: none; outline: none;
-            width: 100%; color: white; padding-right: 10px; flex: 1; min-width: 0;
+            width: 100%; color: var(--text-main); padding-right: 10px; flex: 1; min-width: 0;
         }
         
-        .search-wrapper i { color: var(--text-muted); }
+        .search-wrapper input::placeholder { color: var(--text-muted); }
+        .search-wrapper i { color: var(--accent-color); }
 
         /* Grid */
         .channel-grid {
@@ -121,21 +130,22 @@
             border: 1px solid var(--card-border); position: relative;
             cursor: pointer; text-align: center; transition: 0.3s;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         
-        /* Red hover effect */
+        /* Light red hover effect */
         .channel-card:hover { 
             transform: translateY(-5px); 
-            background: rgba(35, 15, 15, 0.9); 
-            border-color: rgba(229, 9, 20, 0.6);
-            box-shadow: 0 10px 20px -5px rgba(229, 9, 20, 0.2);
+            background: rgba(254, 226, 226, 0.95); /* Very light red */
+            border-color: rgba(220, 38, 38, 0.4);
+            box-shadow: 0 10px 20px -5px rgba(220, 38, 38, 0.15);
         }
 
         .card-logo {
             width: 80px; height: 80px; margin-bottom: 12px;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(0, 0, 0, 0.6); border-radius: 18px; padding: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.9); border-radius: 18px; padding: 8px;
+            border: 1px solid var(--card-border);
         }
         
         .card-logo img { max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; }
@@ -176,7 +186,9 @@
     <header class="header">
         <div class="logo-area">
             <div class="logo-icon"><i class="fa-solid fa-tv"></i></div>
-            <div class="logo-text"><h1>VG TV</h1></div>
+            <div class="logo-text">
+                <h1>VG TV <span id="channelCount" class="channel-count"></span></h1>
+            </div>
         </div>
         <div class="header-actions">
             <select id="catFilter" class="custom-filter">
@@ -200,6 +212,7 @@
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
         const catFilter = document.getElementById('catFilter');
+        const countDisplay = document.getElementById('channelCount');
 
         async function loadData() {
             try {
@@ -253,6 +266,9 @@
 
                 return matchesSearch && matchesCat;
             });
+
+            // Update channel count in header
+            countDisplay.textContent = `(${filtered.length})`;
 
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="empty-box">No channels found.</div>';
