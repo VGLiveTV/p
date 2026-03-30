@@ -4,178 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VG TV</title>
-    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'><path fill='red' d='M64 64V352H576V64H64zM0 64C0 28.7 28.7 0 64 0H576c35.3 0 64 28.7 64 64V352c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zM128 448H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H128c-17.7 0-32-14.3-32-32s14.3-32 32-32z'/></svg>">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Light Red Theme Colors */
-            --bg-color: #fef2f2;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --card-border: rgba(220, 38, 38, 0.2);
-            --accent-color: #dc2626; /* Solid Red */
-            --text-main: #1e293b; /* Dark text for readability */
-            --text-muted: #64748b;
+            --bg: #fef2f2; --card: rgba(255,255,255,0.85); --border: rgba(220,38,38,0.2);
+            --red: #dc2626; --text: #1e293b; --muted: #64748b;
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: radial-gradient(circle at top left, #fee2e2, #fef2f2); min-height: 100vh; color: var(--text); }
+        .app { max-width: 1400px; margin: 0 auto; padding: 0 1rem 1.5rem; }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Inter', -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            /* Soft light red gradient */
-            background: radial-gradient(circle at top left, #fee2e2, #fef2f2);
-            min-height: 100vh;
-            color: var(--text-main);
-        }
-
-        .app { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 0 1rem 1.5rem 1rem; 
-        }
-
-        /* Perfectly Frozen Header */
         .header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); /* Light glass effect */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-            gap: 1rem; 
-            padding: 1.2rem 0; 
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--card-border);
-            box-shadow: 0 4px 20px -10px rgba(220, 38, 38, 0.1);
+            position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.2rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 20px -10px rgba(220,38,38,0.1);
         }
+        .logo-area { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--red); }
+        .logo-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 8px; }
+        .count { font-size: 0.85rem; color: var(--muted); }
+        .actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
 
-        .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-
-        .logo-icon {
-            width: 45px; height: 45px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; color: var(--accent-color);
-        }
-
-        .logo-text h1 {
-            font-size: 1.4rem; font-weight: 800;
-            color: var(--accent-color); /* Solid Red Text */
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        .channel-count {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .header-actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
-
-        /* Category Filter Dropdown */
-        .custom-filter {
-            background: var(--card-bg);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 0.5rem 2.2rem 0.5rem 1rem;
-            outline: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            appearance: none;
-            -webkit-appearance: none;
-            /* Red dropdown arrow */
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 1em;
-            transition: 0.3s;
-            max-width: 200px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .custom-filter:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(220, 38, 38, 0.2); }
-        .custom-filter option { background: #ffffff; color: var(--text-main); }
-
-        .search-wrapper {
-            display: flex; align-items: center; background: var(--card-bg);
-            border-radius: 16px; padding: 0.5rem 1rem; border: 1px solid var(--card-border);
-            width: min(320px, 100%); flex: 1; max-width: 250px;
-            transition: 0.3s;
+        .filter, .search { background: var(--card); border: 1px solid var(--border); border-radius: 16px; outline: none; transition: 0.3s; }
+        .filter:focus, .search:focus-within { border-color: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.2); }
+        
+        .filter {
+            color: var(--text); padding: 0.5rem 2rem 0.5rem 1rem; cursor: pointer; -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 10px center; background-size: 1em; max-width: 200px; text-overflow: ellipsis; white-space: nowrap;
         }
         
-        .search-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(220, 38, 38, 0.2); }
+        .search { display: flex; align-items: center; padding: 0.5rem 1rem; width: 100%; max-width: 250px; }
+        .search input { background: transparent; border: none; outline: none; width: 100%; color: var(--text); padding-right: 10px; }
+        .search input::placeholder { color: var(--muted); }
+        .search i { color: var(--red); }
 
-        .search-wrapper input {
-            background: transparent; border: none; outline: none;
-            width: 100%; color: var(--text-main); padding-right: 10px; flex: 1; min-width: 0;
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem; }
+        .card {
+            background: var(--card); border-radius: 20px; padding: 1rem 0.5rem; border: 1px solid var(--border);
+            cursor: pointer; text-align: center; transition: 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        
-        .search-wrapper input::placeholder { color: var(--text-muted); }
-        .search-wrapper i { color: var(--accent-color); }
-
-        /* Grid */
-        .channel-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem;
-        }
-
-        .channel-card {
-            background: var(--card-bg); border-radius: 20px; padding: 1rem 0.5rem;
-            border: 1px solid var(--card-border); position: relative;
-            cursor: pointer; text-align: center; transition: 0.3s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        
-        /* Light red hover effect */
-        .channel-card:hover { 
-            transform: translateY(-5px); 
-            background: rgba(254, 226, 226, 0.95); /* Very light red */
-            border-color: rgba(220, 38, 38, 0.4);
-            box-shadow: 0 10px 20px -5px rgba(220, 38, 38, 0.15);
-        }
-
-        .card-logo {
-            width: 80px; height: 80px; margin-bottom: 12px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255, 255, 255, 0.9); border-radius: 18px; padding: 8px;
-            border: 1px solid var(--card-border);
-        }
-        
+        .card:hover { transform: translateY(-4px); background: #fee2e2; border-color: rgba(220,38,38,0.4); box-shadow: 0 10px 20px -5px rgba(220,38,38,0.15); }
+        .card-logo { width: 80px; height: 80px; margin: 0 auto 10px; background: rgba(255,255,255,0.9); border-radius: 18px; padding: 8px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
         .card-logo img { max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; }
+        .card-name { font-weight: 600; font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .empty { grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--muted); }
 
-        .card-name { font-weight: 600; font-size: 0.85rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
-
-        .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
-
-        /* Mobile Adjustments */
         @media (max-width: 650px) {
-            .app { padding: 0 0.5rem 1.5rem 0.5rem; }
-            .header { flex-wrap: nowrap; gap: 8px; padding: 1rem 0; } 
-            .logo-area { gap: 6px; }
+            .app { padding: 0 0.5rem 1.5rem; }
+            .header { padding: 1rem 0; gap: 8px; flex-wrap: nowrap; }
             .logo-icon { width: 30px; height: 30px; font-size: 1.2rem; }
             .logo-text h1 { font-size: 1.1rem; }
-            
-            .header-actions { width: auto; flex: 1; margin-top: 0; gap: 6px; }
-            
-            .custom-filter {
-                padding: 0.4rem 1.6rem 0.4rem 0.6rem;
-                font-size: 0.8rem;
-                max-width: 120px; 
-                background-position: right 6px center;
-                background-size: 0.8em;
-                border-radius: 12px;
-            }
-            .search-wrapper { padding: 0.4rem 0.8rem; border-radius: 12px; }
-            .search-wrapper input { font-size: 0.85rem; }
-            
-            .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+            .actions { gap: 6px; }
+            .filter { padding: 0.4rem 1.6rem 0.4rem 0.6rem; font-size: 0.8rem; max-width: 120px; background-position: right 6px center; background-size: 0.8em; border-radius: 12px; }
+            .search { padding: 0.4rem 0.8rem; border-radius: 12px; }
+            .search input { font-size: 0.85rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
         }
     </style>
@@ -186,114 +73,58 @@
     <header class="header">
         <div class="logo-area">
             <div class="logo-icon"><i class="fa-solid fa-tv"></i></div>
-            <div class="logo-text">
-                <h1>VG TV <span id="channelCount" class="channel-count"></span></h1>
-            </div>
+            <div class="logo-text"><h1>VG TV <span id="count" class="count"></span></h1></div>
         </div>
-        <div class="header-actions">
-            <select id="catFilter" class="custom-filter">
-                <option value="All">All Categories</option>
-            </select>
-            
-            <div class="search-wrapper">
-                <input type="text" id="searchInput" placeholder="Search...">
-                <i class="fas fa-search"></i>
-            </div>
+        <div class="actions">
+            <select id="cat" class="filter"><option value="All">All Categories</option></select>
+            <div class="search"><input type="text" id="search" placeholder="Search..."><i class="fas fa-search"></i></div>
         </div>
     </header>
-    
-    <div id="channelGrid" class="channel-grid"></div>
+    <div id="grid" class="grid"></div>
 </div>
 
 <script>
-    (function(){
-        let allChannels = [];
+    (async () => {
+        const $ = id => document.getElementById(id);
+        const elGrid = $('grid'), elSearch = $('search'), elCat = $('cat'), elCount = $('count');
+        let channels = [];
 
-        const grid = document.getElementById('channelGrid');
-        const searchInput = document.getElementById('searchInput');
-        const catFilter = document.getElementById('catFilter');
-        const countDisplay = document.getElementById('channelCount');
+        try {
+            const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
+            // Parse, normalize categories, and sort alphabetically in one go
+            channels = (await res.json()).map(c => {
+                c._cat = (c.category || c.group || c.group_title || c['group-title'] || c.Category || '').trim();
+                return c;
+            }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-        async function loadData() {
-            try {
-                const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
-                allChannels = await res.json();
-                
-                populateCategoryFilter();
-                filterAndRender();
-            } catch (e) { 
-                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
-            }
+            // Count categories
+            const counts = {};
+            channels.forEach(c => { if(c._cat) counts[c._cat] = (counts[c._cat] || 0) + 1; });
+
+            // Populate Dropdown
+            elCat.innerHTML = `<option value="All">All (${channels.length})</option>` + 
+                Object.keys(counts).sort().map(k => `<option value="${k}">${k} (${counts[k]})</option>`).join('');
+
+            render();
+        } catch (e) { elGrid.innerHTML = `<div class="empty">Failed to load channels.</div>`; }
+
+        function render() {
+            const q = elSearch.value.toLowerCase().trim(), cat = elCat.value;
+            const f = channels.filter(c => 
+                (c.name || '').toLowerCase().includes(q) && (cat === 'All' || c._cat === cat)
+            );
+
+            elCount.textContent = `(${f.length})`;
+            elGrid.innerHTML = f.length ? f.map(c => `
+                <div class="card" onclick="window.open('${c.link}', '_blank')">
+                    <div class="card-logo"><img src="${c.logo || 'https://via.placeholder.com/80'}" loading="lazy" alt="logo"></div>
+                    <div class="card-name">${c.name}</div>
+                </div>`).join('') : '<div class="empty">No channels found.</div>';
         }
 
-        function populateCategoryFilter() {
-            const categoryCounts = {};
-            
-            // Count channels in each category
-            allChannels.forEach(ch => {
-                const cat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category;
-                if (cat && cat.trim() !== "") {
-                    const cleanCat = cat.trim();
-                    categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
-                }
-            });
-
-            // Sort alphabetically
-            const sortedCats = Object.keys(categoryCounts).sort();
-            
-            // Build options list
-            let catHtml = `<option value="All">All (${allChannels.length})</option>`;
-            
-            sortedCats.forEach(cat => {
-                catHtml += `<option value="${cat}">${cat} (${categoryCounts[cat]})</option>`;
-            });
-            
-            catFilter.innerHTML = catHtml;
-        }
-
-        function filterAndRender() {
-            const query = searchInput.value.toLowerCase().trim();
-            const selectedCat = catFilter.value;
-            let filtered = allChannels;
-
-            filtered = filtered.filter(ch => {
-                // Check Search Query
-                const matchesSearch = ch.name && ch.name.toLowerCase().includes(query);
-                
-                // Check Dropdown Category
-                const chCat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category || '';
-                const matchesCat = (selectedCat === 'All') || (chCat.trim() === selectedCat);
-
-                return matchesSearch && matchesCat;
-            });
-
-            // Update channel count in header
-            countDisplay.textContent = `(${filtered.length})`;
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-box">No channels found.</div>';
-                return;
-            }
-
-            grid.innerHTML = filtered.map(ch => {
-                return `
-                <div class="channel-card" onclick="window.open('${ch.link}', '_blank')">
-                    <div class="card-logo"><img src="${ch.logo || 'https://via.placeholder.com/80'}" loading="lazy" alt="logo"></div>
-                    <div class="card-name">${ch.name}</div>
-                </div>
-            `}).join('');
-        }
-
-        // Event Listeners
-        let searchTimer;
-        searchInput.oninput = () => {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(filterAndRender, 300);
-        };
-
-        catFilter.addEventListener('change', filterAndRender);
-
-        loadData();
+        let t;
+        elSearch.oninput = () => { clearTimeout(t); t = setTimeout(render, 300); };
+        elCat.onchange = render;
     })();
 </script>
 </body>
