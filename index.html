@@ -38,14 +38,13 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
+        /* Logo background removed, color changed to accent so it is visible */
         .logo-icon {
-            background: linear-gradient(135deg, #38bdf8, #3b82f6);
             width: 45px; height: 45px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; color: white;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+            font-size: 1.5rem; color: var(--accent-color);
         }
 
         .logo-text h1 {
@@ -62,9 +61,14 @@
             width: min(320px, 100%); backdrop-filter: blur(10px);
         }
         
+        /* Adjusted padding and flex for input */
         .search-wrapper input {
             background: transparent; border: none; outline: none;
-            width: 100%; color: white; padding-left: 10px;
+            width: 100%; color: white; padding-right: 10px; flex: 1;
+        }
+        
+        .search-wrapper i {
+            color: var(--text-muted);
         }
 
         /* Grid */
@@ -93,8 +97,13 @@
 
         .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
 
+        /* Mobile Adjustments */
         @media (max-width: 600px) {
-            .header-actions { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .header { flex-wrap: nowrap; gap: 10px; } /* nowrap keeps them on the same line */
+            .header-actions { width: auto; flex: 1; margin-top: 0; }
+            .search-wrapper { width: 100%; padding: 0.4rem 0.8rem; }
+            .logo-icon { width: 35px; height: 35px; font-size: 1.3rem; }
+            .logo-text h1 { font-size: 1.1rem; }
             .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
         }
@@ -110,8 +119,8 @@
         </div>
         <div class="header-actions">
             <div class="search-wrapper">
-                <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search channels...">
+                <i class="fas fa-search"></i>
             </div>
         </div>
     </header>
