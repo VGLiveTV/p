@@ -25,7 +25,6 @@
         .logo-area { display: flex; align-items: center; gap: 10px; }
         .logo-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--red); }
         .logo-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 8px; }
-        .count { font-size: 0.85rem; color: var(--muted); }
         .actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
 
         .filter, .search { background: var(--card); border: 1px solid var(--border); border-radius: 16px; outline: none; transition: 0.3s; }
@@ -73,7 +72,7 @@
     <header class="header">
         <div class="logo-area">
             <div class="logo-icon"><i class="fa-solid fa-tv"></i></div>
-            <div class="logo-text"><h1>VG TV <span id="count" class="count"></span></h1></div>
+            <div class="logo-text"><h1>VG TV</h1></div>
         </div>
         <div class="actions">
             <select id="cat" class="filter"><option value="All">All Categories</option></select>
@@ -86,7 +85,7 @@
 <script>
     (async () => {
         const $ = id => document.getElementById(id);
-        const elGrid = $('grid'), elSearch = $('search'), elCat = $('cat'), elCount = $('count');
+        const elGrid = $('grid'), elSearch = $('search'), elCat = $('cat');
         let channels = [];
 
         try {
@@ -114,7 +113,6 @@
                 (c.name || '').toLowerCase().includes(q) && (cat === 'All' || c._cat === cat)
             );
 
-            elCount.textContent = `(${f.length})`;
             elGrid.innerHTML = f.length ? f.map(c => `
                 <div class="card" onclick="window.open('${c.link}', '_blank')">
                     <div class="card-logo"><img src="${c.logo || 'https://via.placeholder.com/80'}" loading="lazy" alt="logo"></div>
