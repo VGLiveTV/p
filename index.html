@@ -156,11 +156,16 @@
 
         async function loadData() {
             try {
-                const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
-                allChannels = await res.json();
+                // Updated URL
+                const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json');
+                const rawData = await res.json();
+                
+                // Flexible array mapping: handles nested arrays if the JSON structure is { channels: [...] }
+                allChannels = Array.isArray(rawData) ? rawData : (rawData.channels || rawData.data || []);
+                
                 filterAndRender();
             } catch (e) { 
-                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
+                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection or JSON format.</div>`; 
             }
         }
 
@@ -169,7 +174,10 @@
             let filtered = allChannels;
 
             if (query) {
-                filtered = allChannels.filter(ch => ch.name && ch.name.toLowerCase().includes(query));
+                filtered = allChannels.filter(ch => {
+                    const cName = ch.name || ch.title || ch.channel_name || '';
+                    return cName.toLowerCase().includes(query);
+                });
             }
 
             if (filtered.length === 0) {
@@ -178,10 +186,15 @@
             }
 
             grid.innerHTML = filtered.map(ch => {
+                // Flexible object property mapping
+                const cName = ch.name || ch.title || ch.channel_name || 'Unknown Channel';
+                const cLogo = ch.logo || ch.image || ch['tvg-logo'] || 'https://via.placeholder.com/80';
+                const cLink = ch.link || ch.url || ch.stream_url || ch.stream || '#';
+                
                 return `
-                <div class="channel-card" onclick="openModal('${ch.name.replace(/'/g, "\\'")}', '${ch.link}')">
-                    <div class="card-logo"><img src="${ch.logo || 'https://via.placeholder.com/80'}" loading="lazy" alt="logo"></div>
-                    <div class="card-name">${ch.name}</div>
+                <div class="channel-card" onclick="openModal('${cName.replace(/'/g, "\\'")}', '${cLink}')">
+                    <div class="card-logo"><img src="${cLogo}" loading="lazy" alt="logo" onerror="this.src='https://via.placeholder.com/80'"></div>
+                    <div class="card-name">${cName}</div>
                 </div>
             `}).join('');
         }
