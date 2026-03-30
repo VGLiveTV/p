@@ -25,96 +25,52 @@
         body {
             background: radial-gradient(circle at top left, #1e293b, #0f172a);
             min-height: 100vh;
+            padding: 1.5rem 1rem;
             color: var(--text-main);
         }
 
-        .app { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 0 1rem 1.5rem 1rem; 
-        }
+        .app { max-width: 1400px; margin: 0 auto; }
 
-        /* Header (Frozen/Sticky) */
+        /* Header */
         .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-            gap: 1rem; padding: 1rem 0; margin-bottom: 2rem;
+            gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .logo-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
 
         .logo-icon {
+            background: linear-gradient(135deg, #38bdf8, #3b82f6);
             width: 45px; height: 45px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; color: var(--accent-color);
-            transition: 0.3s;
+            font-size: 1.5rem; color: white;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
         }
 
         .logo-text h1 {
             font-size: 1.4rem; font-weight: 800;
             background: linear-gradient(to right, #fff, #94a3b8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 8px;
-            white-space: nowrap;
         }
 
-        .channel-count {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            -webkit-text-fill-color: var(--text-muted); 
-            background: none;
-            margin-top: 2px;
-        }
-
-        .header-actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
-
-        /* Custom Dropdown Styling */
-        .custom-filter {
-            background: var(--card-bg);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 0.5rem 2.2rem 0.5rem 1rem;
-            outline: none;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            font-size: 0.9rem;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 1em;
-            transition: 0.3s;
-            max-width: 200px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .custom-filter:focus { border-color: var(--accent-color); }
-        .custom-filter option { background: var(--bg-color); color: var(--text-main); }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
 
         .search-wrapper {
             display: flex; align-items: center; background: var(--card-bg);
             border-radius: 16px; padding: 0.5rem 1rem; border: 1px solid var(--card-border);
-            max-width: 250px; backdrop-filter: blur(10px); flex: 1;
+            width: min(320px, 100%); backdrop-filter: blur(10px);
         }
         
         .search-wrapper input {
             background: transparent; border: none; outline: none;
-            width: 100%; color: white; padding-right: 8px; min-width: 0;
+            width: 100%; color: white; padding-left: 10px;
         }
 
-        .search-wrapper i { color: var(--text-muted); }
-
         /* Grid */
-        .channel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem; }
+        .channel-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem;
+        }
 
         .channel-card {
             background: var(--card-bg); border-radius: 20px; padding: 1rem 0.5rem;
@@ -137,32 +93,9 @@
 
         .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
 
-        /* Mobile Adjustments */
-        @media (max-width: 650px) {
-            .app { padding: 0 0.5rem 1.5rem 0.5rem; }
-            .header { flex-wrap: nowrap; gap: 8px; padding: 0.8rem 0; }
-            .logo-area { gap: 6px; }
-            .logo-icon { width: 32px; height: 32px; font-size: 1.3rem; }
-            .logo-text h1 { font-size: 1.1rem; }
-            
-            .header-actions { gap: 6px; }
-            
-            /* Adjusted for a single dropdown, allowing it more space */
-            .custom-filter {
-                padding: 0.4rem 1.6rem 0.4rem 0.6rem;
-                font-size: 0.8rem;
-                max-width: 130px; /* Widened to fit numbers */
-                background-position: right 6px center;
-                background-size: 0.8em;
-                border-radius: 12px;
-            }
-            .search-wrapper {
-                padding: 0.4rem 0.8rem;
-                border-radius: 12px;
-            }
-            .search-wrapper input { font-size: 0.85rem; }
-            
-            .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.8rem; }
+        @media (max-width: 600px) {
+            .header-actions { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
         }
     </style>
@@ -173,18 +106,12 @@
     <header class="header">
         <div class="logo-area">
             <div class="logo-icon"><i class="fas fa-tv"></i></div>
-            <div class="logo-text">
-                <h1>JioTV+ <span id="channelCount" class="channel-count"></span></h1>
-            </div>
+            <div class="logo-text"><h1>JioTV+</h1></div>
         </div>
         <div class="header-actions">
-            <select id="catFilter" class="custom-filter">
-                <option value="All">All Categories</option>
-            </select>
-            
             <div class="search-wrapper">
-                <input type="text" id="searchInput" placeholder="Search...">
                 <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search channels...">
             </div>
         </div>
     </header>
@@ -198,75 +125,24 @@
 
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
-        const countDisplay = document.getElementById('channelCount');
-        const catFilter = document.getElementById('catFilter');
 
         async function loadData() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
                 allChannels = await res.json();
-                
-                // Sort channels alphabetically by name
-                allChannels.sort((a, b) => {
-                    const nameA = a.name ? a.name.toLowerCase() : '';
-                    const nameB = b.name ? b.name.toLowerCase() : '';
-                    return nameA.localeCompare(nameB);
-                });
-
-                // Extract unique categories and counts, then populate dropdown
-                populateCategoryFilter();
-
                 filterAndRender();
             } catch (e) { 
                 grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
             }
         }
 
-        function populateCategoryFilter() {
-            const categoryCounts = {};
-            let categorizedChannelsCount = 0;
-            
-            allChannels.forEach(ch => {
-                // Check common category/group keys
-                const cat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category;
-                if (cat && cat.trim() !== "") {
-                    const cleanCat = cat.trim();
-                    categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
-                    categorizedChannelsCount++;
-                }
-            });
-
-            // Sort Category Names alphabetically
-            const sortedCats = Object.keys(categoryCounts).sort();
-            
-            // Build the Options HTML
-            let catHtml = `<option value="All">All (${allChannels.length})</option>`;
-            
-            sortedCats.forEach(cat => {
-                catHtml += `<option value="${cat}">${cat} (${categoryCounts[cat]})</option>`;
-            });
-            
-            catFilter.innerHTML = catHtml;
-        }
-
         function filterAndRender() {
             const query = searchInput.value.toLowerCase().trim();
-            const selectedCat = catFilter.value;
             let filtered = allChannels;
 
-            filtered = filtered.filter(ch => {
-                // Match Search
-                const matchesSearch = ch.name && ch.name.toLowerCase().includes(query);
-                
-                // Match Category
-                const chCat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category || '';
-                const matchesCat = (selectedCat === 'All') || (chCat.trim() === selectedCat);
-
-                return matchesSearch && matchesCat;
-            });
-
-            // Update channel count in header
-            countDisplay.textContent = `(${filtered.length})`;
+            if (query) {
+                filtered = allChannels.filter(ch => ch.name && ch.name.toLowerCase().includes(query));
+            }
 
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="empty-box">No channels found.</div>';
@@ -282,14 +158,11 @@
             `}).join('');
         }
 
-        // Event Listeners
         let searchTimer;
         searchInput.oninput = () => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(filterAndRender, 300);
         };
-
-        catFilter.addEventListener('change', filterAndRender);
 
         loadData();
     })();
