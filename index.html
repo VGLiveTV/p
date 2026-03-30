@@ -18,14 +18,18 @@
         .header {
             position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between; /* Forces Left/Right split */
             padding: 1.2rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);
             box-shadow: 0 4px 20px -10px rgba(220,38,38,0.1);
         }
-        .logo-area { display: flex; align-items: center; gap: 10px; }
+        
+        /* Left Side */
+        .logo-area { display: flex; align-items: center; gap: 10px; flex-shrink: 0; white-space: nowrap; }
         .logo-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--red); }
-        .logo-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 8px; }
-        .actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+        .logo-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--red); display: flex; align-items: center; }
+        
+        /* Right Side */
+        .actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
 
         .filter, .search { background: var(--card); border: 1px solid var(--border); border-radius: 16px; outline: none; transition: 0.3s; }
         .filter:focus, .search:focus-within { border-color: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.2); }
@@ -54,14 +58,13 @@
 
         @media (max-width: 650px) {
             .app { padding: 0 0.5rem 1.5rem; }
-            .header { padding: 1rem 0; gap: 6px; flex-wrap: nowrap; }
+            .header { padding: 1rem 0; gap: 8px; flex-wrap: nowrap; }
             .logo-area { gap: 6px; }
-            /* Increased Logo and Text Size below */
-            .logo-icon { width: 36px; height: 36px; font-size: 1.4rem; }
-            .logo-text h1 { font-size: 1.25rem; }
-            .actions { gap: 6px; }
-            .filter { padding: 0.4rem 1.4rem 0.4rem 0.5rem; font-size: 0.8rem; max-width: 115px; background-position: right 6px center; background-size: 0.8em; border-radius: 12px; }
-            .search { padding: 0.4rem 0.8rem; border-radius: 12px; }
+            .logo-icon { width: 30px; height: 30px; font-size: 1.2rem; }
+            .logo-text h1 { font-size: 1.1rem; }
+            .actions { gap: 6px; flex: 1; justify-content: flex-end; }
+            .filter { padding: 0.4rem 1.6rem 0.4rem 0.6rem; font-size: 0.8rem; width: auto; max-width: 110px; background-position: right 6px center; background-size: 0.8em; border-radius: 12px; }
+            .search { padding: 0.4rem 0.8rem; border-radius: 12px; max-width: 140px; }
             .search input { font-size: 0.85rem; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
