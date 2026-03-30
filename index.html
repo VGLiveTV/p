@@ -54,22 +54,46 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+
+        /* Category Filter Dropdown */
+        .custom-filter {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 0.5rem 2.2rem 0.5rem 1rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            font-size: 0.9rem;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+            transition: 0.3s;
+            max-width: 200px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .custom-filter:focus { border-color: var(--accent-color); }
+        .custom-filter option { background: var(--bg-color); color: var(--text-main); }
 
         .search-wrapper {
             display: flex; align-items: center; background: var(--card-bg);
             border-radius: 16px; padding: 0.5rem 1rem; border: 1px solid var(--card-border);
-            width: min(320px, 100%); backdrop-filter: blur(10px);
+            width: min(320px, 100%); backdrop-filter: blur(10px); flex: 1; max-width: 250px;
         }
         
         .search-wrapper input {
             background: transparent; border: none; outline: none;
-            width: 100%; color: white; padding-right: 10px; flex: 1;
+            width: 100%; color: white; padding-right: 10px; flex: 1; min-width: 0;
         }
         
-        .search-wrapper i {
-            color: var(--text-muted);
-        }
+        .search-wrapper i { color: var(--text-muted); }
 
         /* Grid */
         .channel-grid {
@@ -98,12 +122,26 @@
         .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
 
         /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .header { flex-wrap: nowrap; gap: 10px; } 
-            .header-actions { width: auto; flex: 1; margin-top: 0; }
-            .search-wrapper { width: 100%; padding: 0.4rem 0.8rem; }
-            .logo-icon { width: 35px; height: 35px; font-size: 1.3rem; }
+        @media (max-width: 650px) {
+            .header { flex-wrap: nowrap; gap: 8px; } 
+            .logo-area { gap: 6px; }
+            .logo-icon { width: 30px; height: 30px; font-size: 1.2rem; }
             .logo-text h1 { font-size: 1.1rem; }
+            
+            .header-actions { width: auto; flex: 1; margin-top: 0; gap: 6px; }
+            
+            /* Highly compressed dropdown & search to fit on mobile */
+            .custom-filter {
+                padding: 0.4rem 1.6rem 0.4rem 0.6rem;
+                font-size: 0.8rem;
+                max-width: 120px; 
+                background-position: right 6px center;
+                background-size: 0.8em;
+                border-radius: 12px;
+            }
+            .search-wrapper { padding: 0.4rem 0.8rem; border-radius: 12px; }
+            .search-wrapper input { font-size: 0.85rem; }
+            
             .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .card-logo { width: 60px; height: 60px; }
         }
@@ -118,8 +156,12 @@
             <div class="logo-text"><h1>VG TV</h1></div>
         </div>
         <div class="header-actions">
+            <select id="catFilter" class="custom-filter">
+                <option value="All">All Categories</option>
+            </select>
+            
             <div class="search-wrapper">
-                <input type="text" id="searchInput" placeholder="Search channels...">
+                <input type="text" id="searchInput" placeholder="Search...">
                 <i class="fas fa-search"></i>
             </div>
         </div>
@@ -134,24 +176,60 @@
 
         const grid = document.getElementById('channelGrid');
         const searchInput = document.getElementById('searchInput');
+        const catFilter = document.getElementById('catFilter');
 
         async function loadData() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
                 allChannels = await res.json();
+                
+                populateCategoryFilter();
                 filterAndRender();
             } catch (e) { 
                 grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
             }
         }
 
+        function populateCategoryFilter() {
+            const categoryCounts = {};
+            
+            // Count channels in each category
+            allChannels.forEach(ch => {
+                const cat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category;
+                if (cat && cat.trim() !== "") {
+                    const cleanCat = cat.trim();
+                    categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
+                }
+            });
+
+            // Sort alphabetically
+            const sortedCats = Object.keys(categoryCounts).sort();
+            
+            // Build options list
+            let catHtml = `<option value="All">All (${allChannels.length})</option>`;
+            
+            sortedCats.forEach(cat => {
+                catHtml += `<option value="${cat}">${cat} (${categoryCounts[cat]})</option>`;
+            });
+            
+            catFilter.innerHTML = catHtml;
+        }
+
         function filterAndRender() {
             const query = searchInput.value.toLowerCase().trim();
+            const selectedCat = catFilter.value;
             let filtered = allChannels;
 
-            if (query) {
-                filtered = allChannels.filter(ch => ch.name && ch.name.toLowerCase().includes(query));
-            }
+            filtered = filtered.filter(ch => {
+                // Check Search Query
+                const matchesSearch = ch.name && ch.name.toLowerCase().includes(query);
+                
+                // Check Dropdown Category
+                const chCat = ch.category || ch.group || ch.group_title || ch['group-title'] || ch.Category || '';
+                const matchesCat = (selectedCat === 'All') || (chCat.trim() === selectedCat);
+
+                return matchesSearch && matchesCat;
+            });
 
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="empty-box">No channels found.</div>';
@@ -167,11 +245,14 @@
             `}).join('');
         }
 
+        // Event Listeners
         let searchTimer;
         searchInput.oninput = () => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(filterAndRender, 300);
         };
+
+        catFilter.addEventListener('change', filterAndRender);
 
         loadData();
     })();
