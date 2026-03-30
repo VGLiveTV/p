@@ -18,7 +18,7 @@
 
         * {
             margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -54,24 +54,7 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .header-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-
-        .bookmark-header-btn {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            color: var(--text-muted); width: 44px; height: 44px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; backdrop-filter: blur(10px);
-        }
-        
-        .bookmark-header-btn.active { background: var(--accent-color); color: #0f172a; }
-        
-        .bookmark-count {
-            position: absolute; top: -4px; right: -4px; background: #ef4444;
-            color: white; font-size: 0.7rem; font-weight: 700;
-            min-width: 18px; height: 18px; border-radius: 9px;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid var(--bg-color);
-        }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
 
         .search-wrapper {
             display: flex; align-items: center; background: var(--card-bg);
@@ -84,17 +67,6 @@
             width: 100%; color: white; padding-left: 10px;
         }
 
-        /* Categories */
-        .cats-inner { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem; }
-
-        .cat-chip {
-            background: rgba(255,255,255,0.03); padding: 0.5rem 1.2rem;
-            border-radius: 20px; font-size: 0.85rem; color: var(--text-muted);
-            cursor: pointer; transition: 0.2s;
-        }
-        
-        .cat-chip.active { background: var(--accent-color); color: #0f172a; font-weight: 700; }
-
         /* Grid */
         .channel-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem;
@@ -106,26 +78,19 @@
             cursor: pointer; text-align: center; transition: 0.3s;
         }
         
-        .channel-card:hover { transform: translateY(-5px); background: rgba(30, 41, 59, 0.9); }
+        .channel-card:hover { transform: translateY(-5px); background: rgba(30, 41, 59, 0.9); border-color: rgba(56, 189, 248, 0.4);}
 
         .card-logo {
             width: 80px; height: 80px; margin: 0 auto 12px;
             display: flex; align-items: center; justify-content: center;
+            background: rgba(15, 23, 42, 0.6); border-radius: 18px; padding: 8px;
         }
         
         .card-logo img { max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; }
 
         .card-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-        .hd-badge { background: linear-gradient(135deg, #ec4899, #8b5cf6); font-size: 0.6rem; padding: 2px 8px; border-radius: 6px; color: white; font-weight: 700; }
-
-        .bookmark-btn {
-            position: absolute; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.8);
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; color: var(--text-muted);
-        }
-        
-        .bookmark-btn.active { color: #ef4444; border: 1px solid #ef4444; }
+        .hd-badge { background: linear-gradient(135deg, #ec4899, #8b5cf6); font-size: 0.6rem; padding: 2px 8px; border-radius: 6px; color: white; font-weight: 700; display: inline-block;}
 
         /* Modal */
         .modal-overlay {
@@ -149,7 +114,7 @@
         .empty-box { grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted); }
 
         @media (max-width: 600px) {
-            .header-actions { width: 100%; justify-content: space-between; }
+            .header-actions { width: 100%; justify-content: space-between; margin-top: 10px; }
             .channel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
         }
     </style>
@@ -163,101 +128,65 @@
             <div class="logo-text"><h1>JioTV+</h1></div>
         </div>
         <div class="header-actions">
-            <div class="bookmark-header-btn" id="bookmarkHeaderBtn">
-                <i class="fas fa-bookmark"></i>
-                <span class="bookmark-count" id="bookmarkCount">0</span>
-            </div>
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search...">
+                <input type="text" id="searchInput" placeholder="Search channels...">
             </div>
         </div>
     </header>
     
-    <div class="cats-inner" id="catInner"></div>
     <div id="channelGrid" class="channel-grid"></div>
     
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-card">
-            <div id="modalChannelName" style="font-size:1.5rem; font-weight:800; margin-bottom:1rem;">Channel</div>
+            <div id="modalChannelName" style="font-size:1.5rem; font-weight:800; margin-bottom:1.5rem; color: #fff;">Channel</div>
             <a href="#" class="play-btn" id="playLink"><i class="fas fa-play"></i> Watch Now</a>
-            <button id="closeModalBtn" style="margin-top:1.5rem; background:none; border:none; color:var(--text-muted); cursor:pointer;">Cancel</button>
+            <button id="closeModalBtn" style="margin-top:1.5rem; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 1rem;">Cancel</button>
         </div>
     </div>
 </div>
 
 <script>
     (function(){
-        let allChannels = [], bookmarks = JSON.parse(localStorage.getItem('jio_bookmarks')) || [];
-        let activeCategory = 'All', showingBookmarksOnly = false;
+        let allChannels = [];
 
-        const grid = document.getElementById('channelGrid'), catInner = document.getElementById('catInner');
-        const searchInput = document.getElementById('searchInput'), modalOverlay = document.getElementById('modalOverlay');
+        const grid = document.getElementById('channelGrid');
+        const searchInput = document.getElementById('searchInput');
+        const modalOverlay = document.getElementById('modalOverlay');
 
         async function loadData() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
                 allChannels = await res.json();
-                renderCategories();
-                updateBookmarkCount();
                 filterAndRender();
-            } catch (e) { grid.innerHTML = `<div class="empty-box">Failed to load channels.</div>`; }
-        }
-
-        function renderCategories() {
-            const cats = ['All', ...new Set(allChannels.map(ch => ch.group).filter(g => g))].sort();
-            catInner.innerHTML = cats.map(cat => `<span class="cat-chip ${activeCategory === cat ? 'active' : ''}" data-cat="${cat}">${cat}</span>`).join('');
-            
-            document.querySelectorAll('.cat-chip').forEach(chip => {
-                chip.onclick = () => {
-                    activeCategory = chip.dataset.cat;
-                    showingBookmarksOnly = false;
-                    document.getElementById('bookmarkHeaderBtn').classList.remove('active');
-                    renderCategories(); filterAndRender();
-                };
-            });
+            } catch (e) { 
+                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
+            }
         }
 
         function filterAndRender() {
-            const query = searchInput.value.toLowerCase();
-            let filtered = allChannels.filter(ch => {
-                const matchCat = showingBookmarksOnly ? bookmarks.includes(String(ch.id)) : (activeCategory === 'All' || ch.group === activeCategory);
-                const matchSearch = ch.name.toLowerCase().includes(query);
-                return matchCat && matchSearch;
-            });
+            const query = searchInput.value.toLowerCase().trim();
+            let filtered = allChannels;
 
-            grid.innerHTML = filtered.length ? filtered.map(ch => `
-                <div class="channel-card" onclick="openModal('${ch.name}', '${ch.link}')">
-                    <div class="bookmark-btn ${bookmarks.includes(String(ch.id)) ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${ch.id}', this)">
-                        <i class="fas fa-bookmark"></i>
-                    </div>
-                    <div class="card-logo"><img src="${ch.logo || ''}" loading="lazy"></div>
+            if (query) {
+                filtered = allChannels.filter(ch => ch.name && ch.name.toLowerCase().includes(query));
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-box">No channels found.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(ch => {
+                const isHD = ch.name && (ch.name.includes('HD') || ch.name.includes('FHD'));
+                return `
+                <div class="channel-card" onclick="openModal('${ch.name.replace(/'/g, "\\'")}', '${ch.link}')">
+                    <div class="card-logo"><img src="${ch.logo || 'https://via.placeholder.com/80'}" loading="lazy" alt="logo"></div>
                     <div class="card-name">${ch.name}</div>
-                    ${ch.name.includes('HD') ? '<span class="hd-badge">HD</span>' : ''}
+                    ${isHD ? '<span class="hd-badge">HD</span>' : ''}
                 </div>
-            `).join('') : '<div class="empty-box">No channels found.</div>';
+            `}).join('');
         }
-
-        window.toggleBookmark = (id, btn) => {
-            const idx = bookmarks.indexOf(String(id));
-            if (idx === -1) bookmarks.push(String(id)); else bookmarks.splice(idx, 1);
-            localStorage.setItem('jio_bookmarks', JSON.stringify(bookmarks));
-            btn.classList.toggle('active');
-            updateBookmarkCount();
-            if (showingBookmarksOnly) filterAndRender();
-        };
-
-        function updateBookmarkCount() {
-            const count = document.getElementById('bookmarkCount');
-            count.textContent = bookmarks.length;
-            count.style.display = bookmarks.length ? 'flex' : 'none';
-        }
-
-        document.getElementById('bookmarkHeaderBtn').onclick = function() {
-            showingBookmarksOnly = !showingBookmarksOnly;
-            this.classList.toggle('active');
-            filterAndRender();
-        };
 
         window.openModal = (name, link) => {
             document.getElementById('modalChannelName').textContent = name;
@@ -266,7 +195,19 @@
         };
 
         document.getElementById('closeModalBtn').onclick = () => modalOverlay.classList.remove('show');
-        searchInput.oninput = () => filterAndRender();
+        
+        // Close modal when clicking outside the card
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+        });
+
+        // Search Debounce for better performance
+        let searchTimer;
+        searchInput.oninput = () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(filterAndRender, 300);
+        };
+
         loadData();
     })();
 </script>
