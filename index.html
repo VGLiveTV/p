@@ -156,16 +156,15 @@
 
         async function loadData() {
             try {
-                // Updated URL
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json');
                 const rawData = await res.json();
                 
-                // Flexible array mapping: handles nested arrays if the JSON structure is { channels: [...] }
+                // Flexible mapping in case the JSON wraps the array in an object
                 allChannels = Array.isArray(rawData) ? rawData : (rawData.channels || rawData.data || []);
                 
                 filterAndRender();
             } catch (e) { 
-                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection or JSON format.</div>`; 
+                grid.innerHTML = `<div class="empty-box">Failed to load channels. Check connection.</div>`; 
             }
         }
 
@@ -175,7 +174,7 @@
 
             if (query) {
                 filtered = allChannels.filter(ch => {
-                    const cName = ch.name || ch.title || ch.channel_name || '';
+                    const cName = ch.name || ch.title || '';
                     return cName.toLowerCase().includes(query);
                 });
             }
@@ -186,22 +185,35 @@
             }
 
             grid.innerHTML = filtered.map(ch => {
-                // Flexible object property mapping
-                const cName = ch.name || ch.title || ch.channel_name || 'Unknown Channel';
-                const cLogo = ch.logo || ch.image || ch['tvg-logo'] || 'https://via.placeholder.com/80';
-                const cLink = ch.link || ch.url || ch.stream_url || ch.stream || '#';
+                // Extracting your specific JSON structure keys safely
+                const cName = ch.name || 'Unknown Channel';
+                const cLogo = ch.logo || 'https://via.placeholder.com/80';
+                const cUrl = ch.url || '';
+                const cKeyId = ch['key id'] || ch.key_id || ch.keyId || '';
+                const cKey = ch.key || '';
+                const cCookie = ch.cookie || '';
+                
+                // Escape quotes to prevent HTML breaking
+                const safeName = cName.replace(/'/g, "\\'");
                 
                 return `
-                <div class="channel-card" onclick="openModal('${cName.replace(/'/g, "\\'")}', '${cLink}')">
+                <div class="channel-card" onclick="openModal('${safeName}', '${cUrl}', '${cKeyId}', '${cKey}', '${cCookie}')">
                     <div class="card-logo"><img src="${cLogo}" loading="lazy" alt="logo" onerror="this.src='https://via.placeholder.com/80'"></div>
                     <div class="card-name">${cName}</div>
                 </div>
             `}).join('');
         }
 
-        window.openModal = (name, link) => {
+        // Updated openModal to accept DRM and Cookie parameters
+        window.openModal = (name, url, keyId, key, cookie) => {
             document.getElementById('modalChannelName').textContent = name;
-            document.getElementById('playLink').href = link;
+            
+            // CONSTRUCT PLAYER URL:
+            // Change "player.html" to whatever page or intent actually handles the playback in your environment.
+            // This safely encodes the MPD url, DRM keys, and cookies into the link.
+            const playUrl = `player.html?url=${encodeURIComponent(url)}&keyid=${encodeURIComponent(keyId)}&key=${encodeURIComponent(key)}&cookie=${encodeURIComponent(cookie)}`;
+            
+            document.getElementById('playLink').href = playUrl;
             modalOverlay.classList.add('show');
         };
 
