@@ -482,14 +482,12 @@
     
     <div id="channelGrid" class="channel-grid"></div>
     
-    <!-- Modal target="_blank" -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-card">
             <div class="modal-title" id="modalChannelName">Channel</div>
             <div class="modal-sub" id="modalGroupId">Group</div>
             
-
-            <a href="#" class="play-btn" id="playLink" >
+            <a href="#" class="play-btn" id="playLink" target="_blank">
                 <i class="fas fa-play"></i> Watch Now
             </a>
             
@@ -524,12 +522,22 @@
         const bookmarkHeaderBtn = document.getElementById('bookmarkHeaderBtn');
         const bookmarkCount = document.getElementById('bookmarkCount');
 
-        // Fetch Data
+        // Fetch Data and Normalize JSON
         async function loadJSON() {
             try {
                 const res = await fetch('https://raw.githubusercontent.com/vaathala00/jo/refs/heads/main/stream.json');
-                const data = await res.json();
-                allChannels = data;
+                const rawData = await res.json();
+                
+                // DATA NORMALIZATION: This makes the code suitable for any JSON variation
+                // It checks for different common keys (like url instead of link) and maps them perfectly.
+                allChannels = rawData.map((ch, index) => ({
+                    id: String(ch.id || ch.channel_id || index),
+                    name: ch.name || ch.title || 'Unknown Channel',
+                    group: ch.group || ch.category || ch['group-title'] || 'Other',
+                    logo: ch.logo || ch['tvg-logo'] || 'https://via.placeholder.com/150',
+                    link: ch.link || ch.url || ch.stream_url || '#'
+                }));
+
                 extractCategories();
                 updateBookmarkCount();
                 filterAndRender();
@@ -548,7 +556,7 @@
         }
 
         function renderCategories() {
-            const limit = categoriesExpanded ? categories.length : 6; // Show first 6 by default
+            const limit = categoriesExpanded ? categories.length : 6;
             const visibleCats = categories.slice(0, limit);
             
             let html = visibleCats.map(cat => 
@@ -561,7 +569,6 @@
 
             catInner.innerHTML = html;
             
-            // Bind clicks
             document.querySelectorAll('.cat-chip[data-cat]').forEach(chip => {
                 chip.addEventListener('click', (e) => {
                     activeCategory = e.target.dataset.cat;
@@ -586,13 +593,13 @@
             let temp = [...allChannels];
 
             if (showingBookmarksOnly) {
-                temp = temp.filter(ch => bookmarks.includes(String(ch.id)));
+                temp = temp.filter(ch => bookmarks.includes(ch.id));
             } else if (activeCategory !== 'All') {
                 temp = temp.filter(ch => ch.group === activeCategory);
             }
             
             if (query) {
-                temp = temp.filter(ch => ch.name?.toLowerCase().includes(query));
+                temp = temp.filter(ch => ch.name.toLowerCase().includes(query));
             }
 
             filtered = temp;
@@ -605,41 +612,34 @@
                 return;
             }
 
-            const html = channels.map(ch => {
-                const isBookmarked = bookmarks.includes(String(ch.id));
+            grid.innerHTML = channels.map(ch => {
+                const isBookmarked = bookmarks.includes(ch.id);
                 const isHD = ch.name && (ch.name.includes('HD') || ch.name.includes('FHD'));
                 
                 return `
-                <div class="channel-card" data-id="${ch.id}" data-name="${ch.name}" data-link="${ch.link}" data-group="${ch.group || ''}">
+                <div class="channel-card" data-id="${ch.id}" data-name="${ch.name}" data-link="${ch.link}" data-group="${ch.group}">
                     <div class="bookmark-btn ${isBookmarked ? 'active' : ''}" onclick="event.stopPropagation(); toggleBookmark('${ch.id}', this)">
                         <i class="fas fa-bookmark"></i>
                     </div>
                     <div class="card-logo">
-                        <img src="${ch.logo || 'https://via.placeholder.com/150'}" alt="${ch.name}" loading="lazy">
+                        <img src="${ch.logo}" alt="${ch.name}" loading="lazy">
                     </div>
                     <div class="card-name">${ch.name}</div>
                     <div class="card-badges">
                         ${isHD ? '<span class="hd-badge">HD</span>' : ''}
-                        <span class="cat-tag">${(ch.group || '').slice(0, 8)}</span>
+                        <span class="cat-tag">${ch.group.slice(0, 8)}</span>
                     </div>
                 </div>
                 `;
             }).join('');
 
-            grid.innerHTML = html;
-
-            // Card Click Listener
             document.querySelectorAll('.channel-card').forEach(card => {
                 card.addEventListener('click', () => {
-                    const link = card.dataset.link;
-                    const name = card.dataset.name;
-                    const group = card.dataset.group;
-                    if (link) openModal(name, group, link);
+                    openModal(card.dataset.name, card.dataset.group, card.dataset.link);
                 });
             });
         }
 
-        // Global function for bookmark button inside onclick
         window.toggleBookmark = function(id, btnElement) {
             const index = bookmarks.indexOf(String(id));
             if (index === -1) {
@@ -651,7 +651,6 @@
             }
             localStorage.setItem('allinone_bookmarks_final', JSON.stringify(bookmarks));
             updateBookmarkCount();
-            
             if (showingBookmarksOnly) filterAndRender();
         };
 
@@ -668,8 +667,8 @@
             showingBookmarksOnly = !showingBookmarksOnly;
             bookmarkHeaderBtn.classList.toggle('active', showingBookmarksOnly);
             if(showingBookmarksOnly) {
-                activeCategory = 'All'; // Reset category when viewing bookmarks
-                renderCategories(); // Update UI to show no active category
+                activeCategory = 'All'; 
+                renderCategories(); 
             }
             filterAndRender();
         });
