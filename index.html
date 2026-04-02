@@ -91,7 +91,7 @@
         let channels = [];
 
         try {
-            const res = await fetch('https://raw.githubusercontent.com/vaathala00/jow/main/output.json');
+            const res = await fetch('https://raw.githubusercontent.com/vaathala1/jow/main/output.json');
             channels = (await res.json()).map(c => {
                 c._cat = (c.category || c.group || c.group_title || c['group-title'] || c.Category || '').trim();
                 return c;
