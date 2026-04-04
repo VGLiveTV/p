@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
   <meta name="referrer" content="no-referrer"/>
   
-  <!-- Plyr CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.8.4/plyr.css" />
 
-  <!-- HLS.js -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <!-- Plyr JS -->
-  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+  <script src="https://cdn.plyr.io/3.8.4/plyr.polyfilled.js"></script>
 
   <style>
     body {
@@ -54,13 +51,12 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const video = document.getElementById("player");
-      const source = "https://feeds.intoday.in/aajtak/api/aajtakhd/master.m3u8";
+      const source = "https://dillzy-stream.sayanwork-studioo.workers.dev/live/abc123.m3u8";
 
       const defaultOptions = {
         autoplay: true,
         controls: [
-          'play', 'rewind', 'fast-forward', 'progress', 'current-time',
-          'mute', 'volume', 'picture-in-picture', 'settings', 'fullscreen'
+          'play', 'rewind', 'fast-forward', 'mute', 'volume', 'progress', 'current-time', 'pip', 'settings', 'fullscreen'
         ],
         settings: ['quality']
       };
@@ -83,24 +79,6 @@
             }
           } : {}
         });
-
-        // 🔁 AUTO RESUME
-        setInterval(() => {
-          if (video.paused && video.readyState > 2) {
-            video.play().catch(()=>{});
-          }
-        }, 3000);
-
-        // 🔊 AUTO UNMUTE (on first interaction)
-        const unmute = () => {
-          video.muted = false;
-          video.volume = 1;
-          document.removeEventListener("click", unmute);
-          document.removeEventListener("touchstart", unmute);
-        };
-
-        document.addEventListener("click", unmute);
-        document.addEventListener("touchstart", unmute);
       }
 
       if (Hls.isSupported()) {
