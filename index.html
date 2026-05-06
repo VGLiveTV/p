@@ -83,12 +83,7 @@ color:rgba(255,255,255,0.12);
         controlPanelElements: [  
           'play_pause', 'time_and_duration', 'mute', 'volume', 'spacer', 'language', 'captions', 'picture_in_picture', 'quality', 'fullscreen'  
         ],  
-        seekBarColors: {  
-          base: 'white',  
-          buffered: 'white',  
-          played: 'white'  
-        }
-      });
+        });
 
     player.configure({
       drm:{clearKeys:{[CONFIG.keyId]:CONFIG.key}},
