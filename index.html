@@ -43,8 +43,9 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
     ui.configure({
       addBigPlayButton: false,
-      addSeekBar: false,
+      addSeekBar: true,
       controlPanelElements: ['play_pause', 'time_and_duration', 'mute', 'volume', 'spacer', 'language', 'captions', 'picture_in_picture', 'quality', 'fullscreen']
+      seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
     });
 
     p.configure({
