@@ -27,8 +27,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
   const C = {
     url: "https://dice-live-oc.akamaized.net/hdntl=exp=1778671285~acl=%2f*~id=9292cb6a-0cc1-43bc-9200-073d0468d68e~data=hdntl,aXA9MTA4LjE4MS4wLjE3MSZleHA9MTc3ODU4NDkxNSZlaWQ9OTM2NDI0Jm9pZD0xNTQmdHlwZT1WT0QmdWlkPXhSUnFvOXxiY2FlYTdjZi1jMzM3LTQwMzktODE1OC0zYzFjZTQ5ZTcyOTMmY2lkPWRjZS5maXNmZWQmcHQ9bnVsbA~hmac=9824a1d2cb79ca7425984033bbda75843948baf21c9f5553fa2a7735698300e4/dash/live/2093666/294921-318514/manifest-d.mpd",
     kid: "4d346b1d1ae64d4a800409cffa14983e",
-    key: "208c972bd2da4359ac94e6944fe378b6",
-    cookie: ""
+    key: "208c972bd2da4359ac94e6944fe378b6"
   };
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -54,29 +53,12 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
       streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
     });
 
-    let ck = "";
-    try {
-      const res = await fetch(C.cookie, { cache: "no-store" });
-      ck = (await res.json()).cookie || "";
-    } catch(e) {}
-
-    if (ck) {
-      p.getNetworkingEngine().registerRequestFilter((type, req) => {
-        req.headers["Referer"] = "https://www.jiotv.com/";
-        req.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        req.headers["Cookie"] = ck;
-        
-        let uck = ck.startsWith("__hdnea__=") ? ck.substring(10) : ck;
-        if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && !req.uris[0].includes("__hdnea__")) {
-          req.uris[0] += (req.uris[0].includes("?") ? "&" : "?") + "__hdnea__=" + uck;
-        }
-      });
-    }
-
     try {
       await p.load(C.url);
       v.play().catch(()=>{});
-    } catch(e) {}
+    } catch(e) {
+      console.error("Error loading video", e);
+    }
 
     v.addEventListener("play", () => { v.muted = true; }, { once: true });
   });
