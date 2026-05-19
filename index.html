@@ -1,14 +1,10 @@
-<!-- Load the library -->
-<script src="https://jsdelivr.net"></script>
-
-<!-- HTML Video Element -->
-<video id="videoElement" controls width="100%"></video>
-
+<script src="mpegts.js"></script>
+<video id="videoElement"></video>
 <script>
     if (mpegts.getFeatureList().mseLivePlayback) {
         var videoElement = document.getElementById('videoElement');
         var player = mpegts.createPlayer({
-            type: 'mse', // or 'mpegts'
+            type: 'mpegts',  // could also be mpegts, m2ts, flv
             isLive: true,
             url: 'http://premimum.online/live/jen12345/jen54321/705131.ts'
         });
