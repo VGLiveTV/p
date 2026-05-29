@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<title>Live Stream</title>
+<title>Live Channel</title>
 <style>
     body { margin: 0; background: #000; overflow: hidden; }
     video { width: 100vw; height: 100vh; outline: none; }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 <video id="v" controls autoplay muted></video>
 
 <script>
-    // The target stream URL
-    const streamUrl = 'https://tinyurl.com/link-macha-official-collab-vt/705141.ts';
+    const stream = 'https://tinyurl.com/link-macha-official-collab-vt/705141.ts';
     
-    // Routing it through a free CORS proxy to bypass GitHub Pages security blocks
-    const proxiedUrl = 'https://corsproxy.io/?' + encodeURIComponent(streamUrl);
+    // Route the stream through your own private proxy
+    const proxy = 'https://stream-proxy.vgtv.workers.dev/?url=' + encodeURIComponent(stream);
 
     let player = mpegts.createPlayer({
         type: 'mse',
         isLive: true,
-        url: proxiedUrl
+        url: proxy
     });
     
     player.attachMediaElement(document.getElementById('v'));
