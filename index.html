@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FanCode</title>
+<title>Aaj Tak</title>
 <meta name="referrer" content="no-referrer">
-<link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/en/thumb/6/6c/FanCode_logo.svg/500px-FanCode_logo.svg.png">
+<link rel="icon" href="https://jiotv.catchup.cdn.jio.com/dare_images/images/Aaj_Tak.png">
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css"/>
 
@@ -24,11 +24,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
 <script>
 (function(){
-  const C = {
-    url: "https://in-mc-fblive.fancode.com/mumbai/142980_english_hls_ad2e92ad5f82908_1ta-di_h264/index.m3u8",
-    kid: "",
-    key: ""
-  };
+  const url = "https://in-mc-fblive.fancode.com/mumbai/142980_english_hls_ad2e92ad5f82908_1ta-di_h264/index.m3u8";
 
   document.addEventListener("DOMContentLoaded", async () => {
     shaka.polyfill.installAll();
@@ -48,16 +44,15 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
       });
     
     p.configure({
-      drm: { clearKeys: { [C.kid]: C.key } },
       manifest: { defaultPresentationDelay: 5 },
       streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
     });
 
     try {
-      await p.load(C.url);
+      await p.load(url);
       v.play().catch(()=>{});
     } catch(e) {
-      console.error("Error loading video", e);
+      console.error("Error loading stream", e);
     }
 
     v.addEventListener("play", () => { v.muted = true; }, { once: true });
