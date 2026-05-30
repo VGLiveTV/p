@@ -1,25 +1,64 @@
 <!DOCTYPE html>
-<title>Live Channel</title>
-<style>
-    body { margin: 0; background: #000; overflow: hidden; }
-    video { width: 100vw; height: 100vh; outline: none; }
-</style>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sony Sports Ten 3 HD</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            height: 100%; 
+            overflow: hidden; 
+        }
+        video { 
+            width: 100vw; 
+            height: 100vh; 
+            outline: none; 
+            object-fit: contain; 
+        }
+    </style>
+</head>
+<body>
 
-<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
-<video id="v" controls autoplay muted></video>
+    <video id="video" controls autoplay muted playsinline></video>
 
-<script>
-    const stream = 'https://sonychannel.neyini4157.workers.dev/channel/Sony%20Sports%20Ten%203%20HD.m3u8';
-    
-    const proxy = 'https://stream-proxy.vgtv.workers.dev/?url=' + encodeURIComponent(stream);
+    <script>
+        const video = document.getElementById('video');
+        
+        // Your direct Cloudflare Worker stream link
+        const streamUrl = "https://sonychannel.neyini4157.workers.dev/channel/Sony%20Sports%20Ten%203%20HD.m3u8";
 
-    let player = mpegts.createPlayer({
-        type: 'mse',
-        isLive: true,
-        url: proxy
-    });
-    
-    player.attachMediaElement(document.getElementById('v'));
-    player.load();
-    player.play();
-</script>
+        if (Hls.isSupported()) {
+            const hls = new Hls({
+                maxBufferLength: 30, // Buffers a bit more video to prevent freezing
+                maxMaxBufferLength: 60,
+            });
+            
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play().catch(() => console.log("Click play to start video."));
+            });
+            
+            // Helpful error logging if the stream goes down
+            hls.on(Hls.Events.ERROR, function (event, data) {
+                if (data.fatal) {
+                    console.error("Stream Error:", data);
+                }
+            });
+            
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Fallback for Safari / iOS devices
+            video.src = streamUrl;
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
+        }
+    </script>
+
+</body>
+</html>
