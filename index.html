@@ -1,48 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sony Ten 3 HD</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <style>
-        body, html { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
-        video { width: 100vw; height: 100vh; outline: none; object-fit: contain; }
-    </style>
-</head>
-<body>
+<title>Live Channel</title>
+<style>
+    body { margin: 0; background: #000; overflow: hidden; }
+    video { width: 100vw; height: 100vh; outline: none; }
+</style>
 
-<video id="video" controls autoplay muted playsinline></video>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
+<video id="v" controls autoplay muted></video>
 
 <script>
-    const video = document.getElementById('video');
+    const stream = 'https://tinyurl.com/link-macha-official-collab-vt/705141.ts';
     
-    // The raw stream link
-    const targetStream = "https://tinyurl.com/link-macha-official-collab-vt1/705138.ts";
-    
-    // The proxy link - Notice how it just stacks the URLs together
-    const proxyUrl = "https://stream-proxy.vgtv.workers.dev/" + targetStream;
+    // Route the stream through your own private proxy
+    const proxy = 'https://stream-proxy.vgtv.workers.dev/?url=' + encodeURIComponent(stream);
 
-    if (Hls.isSupported()) {
-        const hls = new Hls({
-            maxBufferLength: 10,
-            maxMaxBufferLength: 20,
-        });
-        
-        hls.loadSource(proxyUrl);
-        hls.attachMedia(video);
-        
-        hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            video.play().catch(() => console.log("Click play to start video."));
-        });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Fallback for Safari/Apple devices
-        video.src = proxyUrl;
-        video.addEventListener('loadedmetadata', function() {
-            video.play();
-        });
-    }
+    let player = mpegts.createPlayer({
+        type: 'mse',
+        isLive: true,
+        url: proxy
+    });
+    
+    player.attachMediaElement(document.getElementById('v'));
+    player.load();
+    player.play();
 </script>
-
-</body>
-</html>
