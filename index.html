@@ -24,8 +24,10 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
 <script>
 (function(){
-  // Direct stream link
+  // The raw stream link
   const url = "https://sl.vodep39240327.workers.dev/channel/SONY%20TEN%203%20HD.m3u8";
+  // Your proxy domain
+  const proxyBase = "https://stream-proxy.vgtv.workers.dev/?url=";
 
   document.addEventListener("DOMContentLoaded", async () => {
     shaka.polyfill.installAll();
@@ -37,7 +39,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
     const p = new shaka.Player(), ui = new shaka.ui.Overlay(p, c, v);
     await p.attach(v);
 
-    // Cleaned up UI config to prevent console errors
     ui.configure({
         controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
         seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
@@ -46,6 +47,14 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
     p.configure({
       manifest: { defaultPresentationDelay: 5 },
       streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
+    });
+
+    // Intercepts all network requests and runs them through your proxy automatically
+    p.getNetworkingEngine().registerRequestFilter((type, request) => {
+      // Avoid re-proxying an already proxied address
+      if (!request.uris[0].startsWith(proxyBase)) {
+        request.uris[0] = proxyBase + encodeURIComponent(request.uris[0]);
+      }
     });
 
     try {
