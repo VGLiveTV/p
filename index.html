@@ -3,32 +3,41 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stream Test</title>
+    <title>Sony Ten 3 HD</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         body, html { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
-        video { width: 100vw; height: 100vh; outline: none; }
+        video { width: 100vw; height: 100vh; outline: none; object-fit: contain; }
     </style>
 </head>
 <body>
 
-<video id="video" controls autoplay muted></video>
+<video id="video" controls autoplay muted playsinline></video>
 
 <script>
-    // 100% reliable test stream
-    const testStream = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
-    
     const video = document.getElementById('video');
+    
+    // The raw stream link
+    const targetStream = "https://sl.vodep39240327.workers.dev/channel/SONY%20TEN%203%20HD.m3u8";
+    
+    // The proxy link - Notice how it just stacks the URLs together
+    const proxyUrl = "https://YOUR_WORKER_URL/" + targetStream;
 
     if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(testStream);
+        const hls = new Hls({
+            maxBufferLength: 10,
+            maxMaxBufferLength: 20,
+        });
+        
+        hls.loadSource(proxyUrl);
         hls.attachMedia(video);
+        
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            video.play();
+            video.play().catch(() => console.log("Click play to start video."));
         });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = testStream;
+        // Fallback for Safari/Apple devices
+        video.src = proxyUrl;
         video.addEventListener('loadedmetadata', function() {
             video.play();
         });
