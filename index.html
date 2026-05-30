@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aaj Tak</title>
+<title>Sony Ten 3 HD</title>
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="https://i.ibb.co/6CjHX9b/Aaj-Tak-Logo.png">
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
@@ -24,8 +24,11 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
 <script>
 (function(){
-  const targetStream = "https://tinyurl.com/link-macha-official-collab-vt/705141.ts";
-  const url = "https://stream-proxy.vgtv.workers.dev/?url=" + encodeURIComponent(targetStream);
+  // Your new Sony Ten 3 HD stream
+  const targetStream = "https://sl.vodep39240327.workers.dev/channel/SONY%20TEN%203%20HD.m3u8";
+  
+  // Routing through your custom VG TV Cloudflare Worker
+  const url = "https://stream-proxy.vgtv.workers.dev/" + targetStream;
 
   document.addEventListener("DOMContentLoaded", async () => {
     shaka.polyfill.installAll();
@@ -40,7 +43,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
     ui.configure({
         addBigPlayButton: true,
         addSeekBar: false,
-        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','overflow_menu','fullscreen'],
+        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
         seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
       });
     
