@@ -5,68 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SonyLiv Playlist Player</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding: 20px; }
-        h1 { text-align: center; margin-bottom: 30px; color: #ffc107; }
-        #loading { text-align: center; font-size: 1.2rem; color: #aaa; }
-        
-        #playlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .channel-card { background: #1e1e1e; border-radius: 10px; padding: 20px; text-decoration: none; color: white; transition: all 0.2s ease-in-out; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px solid #333; }
-        .channel-card:hover { transform: translateY(-5px); border-color: #ffc107; box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2); }
-        .channel-logo { max-width: 100%; height: 120px; margin-bottom: 15px; object-fit: cover; border-radius: 6px; }
-        .channel-title { font-size: 16px; font-weight: 600; word-wrap: break-word; }
-        
-        #debug-log { max-width: 1200px; margin: 20px auto; background: #222; color: #0f0; padding: 15px; font-family: monospace; border-radius: 8px; border: 1px solid #444; word-wrap: break-word;}
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #121212; 
+            color: #ffffff; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        h1 { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            color: #ffc107; 
+        }
+        #loading { 
+            text-align: center; 
+            font-size: 1.2rem; 
+            color: #aaa; 
+        }
+        #playlist { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .channel-card { 
+            background: #1e1e1e; 
+            border-radius: 10px; 
+            padding: 20px; 
+            text-decoration: none; 
+            color: white; 
+            transition: all 0.2s ease-in-out; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            border: 1px solid #333; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .channel-card:hover { 
+            transform: translateY(-5px); 
+            border-color: #ffc107; 
+            box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2); 
+        }
+        .channel-logo { 
+            max-width: 100%; 
+            height: 120px; 
+            margin-bottom: 15px; 
+            object-fit: cover; 
+            border-radius: 6px; 
+        }
+        .channel-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            word-wrap: break-word; 
+        }
+        .error { 
+            color: #ff4c4c; 
+            text-align: center; 
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
 
     <h1>SonyLiv Live Events</h1>
-    <div id="loading">Fetching playlist...</div>
+    <div id="loading">Fetching live events...</div>
     <div id="playlist"></div>
-    
-    <div id="debug-log">System Status: Starting up...</div>
 
     <script>
         const JSON_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
         const PLAYER_BASE_URL = 'https://webplay.rf.gd/sonyliv-events/player.html?url=';
-        const debugBox = document.getElementById('debug-log');
-
-        function log(msg, isError = false) {
-            debugBox.innerHTML += `<br>> ${isError ? '<span style="color:#ff4c4c;">' + msg + '</span>' : msg}`;
-        }
 
         async function loadPlaylist() {
             try {
-                log(`Attempting to download JSON...`);
                 const response = await fetch(JSON_URL, { cache: "no-store" });
-                
                 if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                 
                 const data = await response.json();
-                log(`JSON downloaded successfully! Scanning for links...`);
-                
                 document.getElementById('loading').style.display = 'none';
                 
-                // Aggressive extraction
+                // Use the aggressive scanner that successfully found your link
                 const validItems = extractPlayableItems(data);
                 
                 if (validItems.length === 0) {
-                    log(`ERROR: Could not find stream links. Here is what the JSON looks like:`, true);
-                    // Print the first 500 characters of the JSON so we can see the exact formatting
-                    log(`<span style="color:#aaa;">${JSON.stringify(data).substring(0, 500)}...</span>`);
+                    document.getElementById('playlist').innerHTML = '<div class="error">No live events found in the file at the moment.</div>';
                     return;
                 }
 
-                log(`Found ${validItems.length} playable events. Building cards...`);
                 buildCards(validItems);
-
             } catch (error) {
                 console.error(error);
                 document.getElementById('loading').style.display = 'none';
-                log(`CRITICAL FAILURE: ${error.message}`, true);
+                document.getElementById('playlist').innerHTML = '<div class="error">Failed to load live events. Check your network connection.</div>';
             }
         }
 
+        // The successful deep scanner logic
         function extractPlayableItems(obj) {
             let foundItems = [];
             
@@ -76,28 +112,22 @@
                 });
             } 
             else if (typeof obj === 'object' && obj !== null) {
-                let streamUrl = '';
-                
-                // 1. Look for known keys
-                streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
+                let streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
 
-                // 2. If not found, aggressively scan ALL values in the object for a web link
                 if (!streamUrl) {
                     for (let key in obj) {
                         const val = obj[key];
                         if (typeof val === 'string' && val.startsWith('http') && (val.includes('.m3u8') || val.includes('.mpd') || val.includes('akamaized'))) {
                             streamUrl = val;
-                            break; // found one!
+                            break;
                         }
                     }
                 }
 
                 if (streamUrl && typeof streamUrl === 'string' && streamUrl.startsWith('http')) {
-                    // Store the found URL cleanly so buildCards can use it
                     obj.extracted_url = streamUrl;
                     foundItems.push(obj);
                 } else {
-                    // Dig deeper into nested objects
                     for (let key in obj) {
                         if (typeof obj[key] === 'object') {
                             foundItems = foundItems.concat(extractPlayableItems(obj[key]));
@@ -112,14 +142,10 @@
             const playlistContainer = document.getElementById('playlist');
             
             items.forEach((item, index) => {
-                // Using the URL we safely extracted above
                 const streamUrl = item.extracted_url; 
-                
-                // Aggressively look for a title and image
                 const currentName = item.title || item.event_name || item.match_name || item.name || item.id || `Live Event ${index + 1}`;
                 let currentLogo = item.image || item.thumbnail || item.src || item.logo || '';
                 
-                // If logo is not found, check values for image links
                 if (!currentLogo) {
                      for (let key in item) {
                         if (typeof item[key] === 'string' && (item[key].endsWith('.png') || item[key].endsWith('.jpg') || item[key].includes('images'))) {
@@ -129,7 +155,6 @@
                     }
                 }
 
-                // Make sure to encode the URL so tokens don't break the query string
                 const finalPlayerUrl = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
 
                 const card = document.createElement('a');
@@ -153,8 +178,6 @@
 
                 playlistContainer.appendChild(card);
             });
-            
-            log(`Success! Cards are ready to use.`);
         }
 
         loadPlaylist();
