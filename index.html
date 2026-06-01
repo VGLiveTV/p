@@ -3,98 +3,295 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Live Player</title>
+<title>Sony LIV Player</title>
 <meta name="referrer" content="no-referrer">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon fill='orange' points='50,10 61,40 94,40 68,60 78,90 50,70 22,90 32,60 6,40 39,40'/></svg>">
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css"/>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
-.shaka-video-container{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
+
+.shaka-video-container{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center; z-index:1;}
 video{width:100%;height:100%;object-fit:contain;background:#000}
+
+/* Playlist Menu Styles */
+#playlist-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: rgba(20, 20, 20, 0.95);
+    z-index: 10;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+}
+#playlist-container.open {
+    transform: translateX(0);
+}
+.header {
+    padding: 15px;
+    background: #111;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+.header h2 { font-size: 16px; margin: 0; color: #ffc107; }
+.close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+.playlist-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+.playlist-item {
+    display: flex;
+    align-items: center;
+    background: #222;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    border: 1px solid transparent;
+}
+.playlist-item:hover { 
+    background: #333; 
+    border-color: #555;
+    transform: scale(1.02);
+}
+.playlist-item img {
+    width: 65px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 12px;
+    background: #000;
+}
+.playlist-item-info {
+    flex: 1;
+    overflow: hidden;
+}
+.playlist-item-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.playlist-item-category {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 4px;
+}
+.live-badge {
+    color: #ff4c4c;
+    font-weight: bold;
+    font-size: 10px;
+    margin-left: 5px;
+}
+
+/* Playlist Toggle Button */
+.toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: 1px solid #555;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    backdrop-filter: blur(5px);
+}
+.toggle-btn:hover { background: rgba(0,0,0,0.9); border-color: #ffc107; }
+
+/* Custom Scrollbar */
+.playlist-items::-webkit-scrollbar { width: 6px; }
+.playlist-items::-webkit-scrollbar-track { background: #1a1a1a; }
+.playlist-items::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 </style>
 </head>
 <body>
 
+<button class="toggle-btn" id="togglePlaylistBtn">☰ Live Events</button>
+
+<div id="playlist-container">
+    <div class="header">
+        <h2>Live Matches</h2>
+        <button class="close-btn" id="closePlaylistBtn">&times;</button>
+    </div>
+    <div class="playlist-items" id="playlistItems">
+        <div style="color:white; text-align:center; margin-top:20px;">Fetching matches...</div>
+    </div>
+</div>
+
 <div class="shaka-video-container" id="c">
-<video id="v" autoplay muted playsinline preload="metadata"></video>
+    <video id="v" autoplay muted playsinline preload="metadata"></video>
 </div>
 
 <script>
 (function(){
-  // Grab parameters from the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  
-  // Use URL parameters if they exist, otherwise fallback to default
-  const C = {
-    url: urlParams.get('url') || "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/WDVLive/index.mpd",
-    kid: urlParams.get('kid') || "400131994b445d8c8817202248760fda",
-    key: urlParams.get('key') || "2d56cb6f07a75b9aff165d534ae2bfc4",
-    cookie: urlParams.get('cookie') || "https://raw.githubusercontent.com/VGLive/ss/refs/heads/main/ss1h.json"
-  };
+  // The JSON File URL you provided
+  const JSON_URL = "https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/refs/heads/main/sonyliv.json";
+  let playerInstance = null;
 
   document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Initialize Shaka Player
     shaka.polyfill.installAll();
-    if (!shaka.Player.isBrowserSupported()) return;
+    if (!shaka.Player.isBrowserSupported()) {
+        alert("Your browser is not supported!");
+        return;
+    }
 
     const v = document.getElementById("v"), c = document.getElementById("c");
-    v.muted = true; // Required for autoplay in modern browsers
+    v.muted = true;
 
-    const p = new shaka.Player(), ui = new shaka.ui.Overlay(p, c, v);
-    await p.attach(v);
+    playerInstance = new shaka.Player();
+    const ui = new shaka.ui.Overlay(playerInstance, c, v);
+    await playerInstance.attach(v);
 
     ui.configure({
         addBigPlayButton: true,
         addSeekBar: false,
-        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
+        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','overflow_menu','fullscreen'],
         seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
-      });
+    });
     
-    // Configure DRM and Streaming settings
-    let playerConfig = {
+    playerInstance.configure({
       manifest: { defaultPresentationDelay: 5 },
       streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
-    };
-
-    // Only add ClearKeys if kid and key are provided
-    if (C.kid && C.key) {
-        playerConfig.drm = { clearKeys: { [C.kid]: C.key } };
-    }
-    
-    p.configure(playerConfig);
-
-    // Handle Custom Cookies/Tokens
-    let ck = "";
-    if (C.cookie) {
-        try {
-          const res = await fetch(C.cookie, { cache: "no-store" });
-          ck = (await res.json()).cookie || "";
-        } catch(e) { console.error("Cookie fetch failed", e); }
-    }
-
-    if (ck) {
-      p.getNetworkingEngine().registerRequestFilter((type, req) => {
-        req.headers["Referer"] = "https://www.jiotv.com/";
-        req.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        req.headers["Cookie"] = ck;
-        
-        let uck = ck.startsWith("__hdnea__=") ? ck.substring(10) : ck;
-        if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && !req.uris[0].includes("__hdnea__")) {
-          req.uris[0] += (req.uris[0].includes("?") ? "&" : "?") + "__hdnea__=" + uck;
-        }
-      });
-    }
-
-    // Load the video
-    try {
-      await p.load(C.url);
-      v.play().catch(()=>{});
-    } catch(e) { console.error("Error loading video", e); }
+    });
 
     v.addEventListener("play", () => { v.muted = false; }, { once: true });
+
+    // 2. Fetch the JSON data and build UI
+    fetchPlaylist();
   });
+
+  async function fetchPlaylist() {
+      try {
+          const response = await fetch(JSON_URL);
+          const data = await response.json();
+          // The JSON usually stores data in a "matches" array. 
+          const matches = data.matches || (Array.isArray(data) ? data : []);
+          renderPlaylist(matches);
+      } catch (error) {
+          console.error("Error fetching JSON:", error);
+          document.getElementById('playlistItems').innerHTML = '<div style="color:#ff4c4c; padding:10px; text-align:center;">Error loading playlist data.</div>';
+      }
+  }
+
+  // --- Dynamic Data Finders --- 
+  // These functions safely dig through the JSON to find the right data 
+  // even if the exact key names change in the future.
+  function findStreamUrl(obj) {
+      if (typeof obj === 'string') {
+          if (obj.includes('.mpd') || obj.includes('.m3u8')) return obj;
+      } else if (typeof obj === 'object' && obj !== null) {
+          if (obj.play_url) return obj.play_url;
+          if (obj.dash_url) return obj.dash_url;
+          if (obj.hls_url) return obj.hls_url;
+          if (obj.url) return obj.url;
+          
+          for (let key in obj) {
+              const res = findStreamUrl(obj[key]);
+              if (res) return res;
+          }
+      }
+      return null;
+  }
+
+  function findTitle(obj) {
+      return obj.title || obj.event_name || obj.match_name || obj.name || `Event ${obj.contentId || ''}`;
+  }
+
+  // 3. Render the Sidebar UI
+  function renderPlaylist(matches) {
+      const container = document.getElementById('playlistItems');
+      container.innerHTML = ''; // Clear loading text
+
+      if (matches.length === 0) {
+          container.innerHTML = '<div style="color:white; padding:10px; text-align:center;">No live matches found.</div>';
+          return;
+      }
+
+      let firstValidStreamUrl = null;
+
+      matches.forEach(match => {
+          const streamUrl = findStreamUrl(match);
+          const title = findTitle(match);
+          const imgSrc = match.src || match.image || match.thumbnail || '';
+          const category = match.event_category || match.sport || 'Sports';
+          const isLive = match.isLive !== false; // assume live unless strictly false
+
+          if (!streamUrl) return; // Skip if no playable URL found
+          if (!firstValidStreamUrl) firstValidStreamUrl = streamUrl;
+
+          const item = document.createElement('div');
+          item.className = 'playlist-item';
+          
+          item.innerHTML = `
+              ${imgSrc ? `<img src="${imgSrc}" onerror="this.style.display='none'">` : ''}
+              <div class="playlist-item-info">
+                  <div class="playlist-item-title">${title}</div>
+                  <div class="playlist-item-category">
+                      ${category} ${isLive ? '<span class="live-badge">🔴 LIVE</span>' : ''}
+                  </div>
+              </div>
+          `;
+
+          // When clicked, load stream and close sidebar
+          item.addEventListener('click', () => {
+              loadStream(streamUrl);
+              togglePlaylist(false);
+          });
+
+          container.appendChild(item);
+      });
+
+      // Auto-play the first match on page load
+      if (firstValidStreamUrl) {
+          loadStream(firstValidStreamUrl);
+      }
+  }
+
+  // 4. Stream Loader function
+  async function loadStream(url) {
+      try {
+          await playerInstance.load(url);
+          document.getElementById('v').play().catch(()=>{});
+      } catch(e) {
+          console.error("Error loading stream", e);
+      }
+  }
+
+  // 5. Sidebar Toggle Logic
+  const playlistContainer = document.getElementById('playlist-container');
+  const toggleBtn = document.getElementById('togglePlaylistBtn');
+  const closeBtn = document.getElementById('closePlaylistBtn');
+
+  function togglePlaylist(forceState) {
+      if (typeof forceState === 'boolean') {
+          if (forceState) playlistContainer.classList.add('open');
+          else playlistContainer.classList.remove('open');
+      } else {
+          playlistContainer.classList.toggle('open');
+      }
+  }
+
+  toggleBtn.addEventListener('click', togglePlaylist);
+  closeBtn.addEventListener('click', () => togglePlaylist(false));
+
 })();
 </script>
 </body>
