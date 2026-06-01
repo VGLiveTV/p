@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Star Sports 2 Hindi HD</title>
+<title>Live Player</title>
 <meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon fill='orange' points='50,10 61,40 94,40 68,60 78,90 50,70 22,90 32,60 6,40 39,40'/></svg>">
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css"/>
 
@@ -23,43 +24,76 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
 <script>
 (function(){
-  // The insecure HTTP target
-  const rawUrl = "https://sl.vodep39240327.workers.dev/channel/SONY%20TEN%203%20HD.m3u8";
+  // Grab parameters from the URL
+  const urlParams = new URLSearchParams(window.location.search);
   
-  // The magic: Just combine your HTTPS proxy and the HTTP URL
-  const proxyUrl = "https://stream-proxy.vgtv.workers.dev/" + rawUrl;
+  // Use URL parameters if they exist, otherwise fallback to default
+  const C = {
+    url: urlParams.get('url') || "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/WDVLive/index.mpd",
+    kid: urlParams.get('kid') || "400131994b445d8c8817202248760fda",
+    key: urlParams.get('key') || "2d56cb6f07a75b9aff165d534ae2bfc4",
+    cookie: urlParams.get('cookie') || "https://raw.githubusercontent.com/VGLive/ss/refs/heads/main/ss1h.json"
+  };
 
   document.addEventListener("DOMContentLoaded", async () => {
     shaka.polyfill.installAll();
     if (!shaka.Player.isBrowserSupported()) return;
 
     const v = document.getElementById("v"), c = document.getElementById("c");
-    v.muted = true;
+    v.muted = true; // Required for autoplay in modern browsers
 
     const p = new shaka.Player(), ui = new shaka.ui.Overlay(p, c, v);
     await p.attach(v);
 
-    // Clean UI config
     ui.configure({
+        addBigPlayButton: true,
         addSeekBar: false,
         controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
         seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
       });
     
-    p.configure({
+    // Configure DRM and Streaming settings
+    let playerConfig = {
       manifest: { defaultPresentationDelay: 5 },
       streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
-    });
+    };
 
-    try {
-      // Shaka Player loads the secure proxy link
-      await p.load(proxyUrl);
-      v.play().catch(()=>{});
-    } catch(e) {
-      console.error("Error loading stream", e);
+    // Only add ClearKeys if kid and key are provided
+    if (C.kid && C.key) {
+        playerConfig.drm = { clearKeys: { [C.kid]: C.key } };
+    }
+    
+    p.configure(playerConfig);
+
+    // Handle Custom Cookies/Tokens
+    let ck = "";
+    if (C.cookie) {
+        try {
+          const res = await fetch(C.cookie, { cache: "no-store" });
+          ck = (await res.json()).cookie || "";
+        } catch(e) { console.error("Cookie fetch failed", e); }
     }
 
-    v.addEventListener("play", () => { v.muted = true; }, { once: true });
+    if (ck) {
+      p.getNetworkingEngine().registerRequestFilter((type, req) => {
+        req.headers["Referer"] = "https://www.jiotv.com/";
+        req.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+        req.headers["Cookie"] = ck;
+        
+        let uck = ck.startsWith("__hdnea__=") ? ck.substring(10) : ck;
+        if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST || type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && !req.uris[0].includes("__hdnea__")) {
+          req.uris[0] += (req.uris[0].includes("?") ? "&" : "?") + "__hdnea__=" + uck;
+        }
+      });
+    }
+
+    // Load the video
+    try {
+      await p.load(C.url);
+      v.play().catch(()=>{});
+    } catch(e) { console.error("Error loading video", e); }
+
+    v.addEventListener("play", () => { v.muted = false; }, { once: true });
   });
 })();
 </script>
