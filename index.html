@@ -17,17 +17,27 @@
             margin-bottom: 30px; 
             color: #ffc107; 
         }
+        h2 {
+            max-width: 1200px;
+            margin: 30px auto 15px auto;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+        .live-heading { color: #ff4c4c; }
+        .upcoming-heading { color: #00bcd4; }
+        
         #loading { 
             text-align: center; 
             font-size: 1.2rem; 
             color: #aaa; 
         }
-        #playlist { 
+        .grid-container { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
             gap: 20px; 
             max-width: 1200px; 
-            margin: 0 auto; 
+            margin: 0 auto 40px auto; 
         }
         .channel-card { 
             background: #1e1e1e; 
@@ -43,11 +53,20 @@
             text-align: center; 
             border: 1px solid #333; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
         }
         .channel-card:hover { 
             transform: translateY(-5px); 
             border-color: #ffc107; 
             box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2); 
+        }
+        .upcoming-card {
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+        .upcoming-card:hover {
+            border-color: #00bcd4;
+            box-shadow: 0 6px 12px rgba(0, 188, 212, 0.2);
         }
         .channel-logo { 
             max-width: 100%; 
@@ -61,18 +80,43 @@
             font-weight: 600; 
             word-wrap: break-word; 
         }
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-live { background-color: #ff4c4c; color: #fff; }
+        .badge-upcoming { background-color: #00bcd4; color: #fff; }
+        
         .error { 
             color: #ff4c4c; 
             text-align: center; 
             grid-column: 1 / -1;
+            padding: 20px;
+        }
+        .empty-message {
+            color: #aaa;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 10px 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>SonyLiv Live Events</h1>
-    <div id="loading">Fetching live events...</div>
-    <div id="playlist"></div>
+    <h1>SonyLiv Tracker</h1>
+    <div id="loading">Fetching events...</div>
+
+    <h2 class="live-heading">🔴 Live Now</h2>
+    <div id="live-playlist" class="grid-container"></div>
+
+    <h2 class="upcoming-heading">📅 Upcoming Events</h2>
+    <div id="upcoming-playlist" class="grid-container"></div>
 
     <script>
         const JSON_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
@@ -86,51 +130,74 @@
                 const data = await response.json();
                 document.getElementById('loading').style.display = 'none';
                 
-                // Use the aggressive scanner that successfully found your link
-                const validItems = extractPlayableItems(data);
+                // Parse out all entries aggressively
+                const allItems = extractAllItems(data);
                 
-                if (validItems.length === 0) {
-                    document.getElementById('playlist').innerHTML = '<div class="error">No live events found in the file at the moment.</div>';
-                    return;
-                }
+                // Categorize into live and upcoming pools
+                const liveItems = [];
+                const upcomingItems = [];
+                
+                allItems.forEach(item => {
+                    const status = (item.status || '').toLowerCase();
+                    const isLiveFlag = item.isLive === true || item.live === true || status === 'live';
+                    const isUpcomingFlag = item.isUpcoming === true || status === 'upcoming' || status === 'scheduled';
+                    
+                    if (isLiveFlag) {
+                        liveItems.push(item);
+                    } else if (isUpcomingFlag) {
+                        upcomingItems.push(item);
+                    } else {
+                        // Fallback: If it has a playable URL, assume it's live right now
+                        if (item.extracted_url) {
+                            liveItems.push(item);
+                        } else {
+                            upcomingItems.push(item);
+                        }
+                    }
+                });
 
-                buildCards(validItems);
+                buildGrid(liveItems, 'live-playlist', true);
+                buildGrid(upcomingItems, 'upcoming-playlist', false);
+
             } catch (error) {
                 console.error(error);
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('playlist').innerHTML = '<div class="error">Failed to load live events. Check your network connection.</div>';
+                document.getElementById('live-playlist').innerHTML = '<div class="error">Failed to load events. Check your connection or JSON format.</div>';
             }
         }
 
-        // The successful deep scanner logic
-        function extractPlayableItems(obj) {
+        // Deep scanner looking for items (pulling stream URLs if available)
+        function extractAllItems(obj) {
             let foundItems = [];
             
             if (Array.isArray(obj)) {
                 obj.forEach(item => {
-                    foundItems = foundItems.concat(extractPlayableItems(item));
+                    foundItems = foundItems.concat(extractAllItems(item));
                 });
             } 
             else if (typeof obj === 'object' && obj !== null) {
-                let streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
-
-                if (!streamUrl) {
-                    for (let key in obj) {
-                        const val = obj[key];
-                        if (typeof val === 'string' && val.startsWith('http') && (val.includes('.m3u8') || val.includes('.mpd') || val.includes('akamaized'))) {
-                            streamUrl = val;
-                            break;
+                // If it has standard properties of an event entry
+                if (obj.title || obj.event_name || obj.match_name || obj.name || obj.id) {
+                    
+                    // Attempt to locate a valid stream URL inside this block
+                    let streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
+                    if (!streamUrl) {
+                        for (let key in obj) {
+                            const val = obj[key];
+                            if (typeof val === 'string' && val.startsWith('http') && (val.includes('.m3u8') || val.includes('.mpd') || val.includes('akamaized'))) {
+                                streamUrl = val;
+                                break;
+                            }
                         }
                     }
-                }
-
-                if (streamUrl && typeof streamUrl === 'string' && streamUrl.startsWith('http')) {
-                    obj.extracted_url = streamUrl;
+                    if (streamUrl) obj.extracted_url = streamUrl;
+                    
                     foundItems.push(obj);
                 } else {
+                    // Dig down to locate potential objects
                     for (let key in obj) {
                         if (typeof obj[key] === 'object') {
-                            foundItems = foundItems.concat(extractPlayableItems(obj[key]));
+                            foundItems = foundItems.concat(extractAllItems(obj[key]));
                         }
                     }
                 }
@@ -138,12 +205,18 @@
             return foundItems;
         }
 
-        function buildCards(items) {
-            const playlistContainer = document.getElementById('playlist');
-            
+        function buildGrid(items, containerId, isLiveSection) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="empty-message">No ${isLiveSection ? 'live' : 'upcoming'} events scheduled at this moment.</div>`;
+                return;
+            }
+
             items.forEach((item, index) => {
                 const streamUrl = item.extracted_url; 
-                const currentName = item.title || item.event_name || item.match_name || item.name || item.id || `Live Event ${index + 1}`;
+                const currentName = item.title || item.event_name || item.match_name || item.name || item.id || `Event ${index + 1}`;
                 let currentLogo = item.image || item.thumbnail || item.src || item.logo || '';
                 
                 if (!currentLogo) {
@@ -155,12 +228,24 @@
                     }
                 }
 
-                const finalPlayerUrl = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
+                let card;
+                if (isLiveSection && streamUrl) {
+                    // Interactive links for live events
+                    card = document.createElement('a');
+                    card.className = 'channel-card';
+                    card.href = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
+                    card.target = '_blank';
+                } else {
+                    // Non-clickable placeholder container for upcoming links without active players
+                    card = document.createElement('div');
+                    card.className = 'channel-card upcoming-card';
+                }
 
-                const card = document.createElement('a');
-                card.className = 'channel-card';
-                card.href = finalPlayerUrl;
-                card.target = '_blank';
+                // Append status badge
+                const badge = document.createElement('span');
+                badge.className = `badge ${isLiveSection ? 'badge-live' : 'badge-upcoming'}`;
+                badge.textContent = isLiveSection ? 'LIVE' : (item.startTime || item.time || 'SOON');
+                card.appendChild(badge);
 
                 if (currentLogo) {
                     const img = document.createElement('img');
@@ -176,7 +261,7 @@
                 title.textContent = currentName;
                 card.appendChild(title);
 
-                playlistContainer.appendChild(card);
+                container.appendChild(card);
             });
         }
 
