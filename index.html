@@ -15,7 +15,7 @@
         .channel-logo { max-width: 100%; height: 120px; margin-bottom: 15px; object-fit: cover; border-radius: 6px; }
         .channel-title { font-size: 16px; font-weight: 600; word-wrap: break-word; }
         
-        #debug-log { max-width: 1200px; margin: 20px auto; background: #222; color: #0f0; padding: 15px; font-family: monospace; border-radius: 8px; border: 1px solid #444; }
+        #debug-log { max-width: 1200px; margin: 20px auto; background: #222; color: #0f0; padding: 15px; font-family: monospace; border-radius: 8px; border: 1px solid #444; word-wrap: break-word;}
     </style>
 </head>
 <body>
@@ -27,7 +27,6 @@
     <div id="debug-log">System Status: Starting up...</div>
 
     <script>
-        // Using the direct /main/ path to avoid GitHub redirect issues
         const JSON_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
         const PLAYER_BASE_URL = 'https://webplay.rf.gd/sonyliv-events/player.html?url=';
         const debugBox = document.getElementById('debug-log');
@@ -38,23 +37,23 @@
 
         async function loadPlaylist() {
             try {
-                log(`Attempting to download JSON from GitHub...`);
+                log(`Attempting to download JSON...`);
                 const response = await fetch(JSON_URL, { cache: "no-store" });
                 
-                if (!response.ok) {
-                    throw new Error(`GitHub Server returned Error ${response.status} (${response.statusText})`);
-                }
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                 
                 const data = await response.json();
                 log(`JSON downloaded successfully! Scanning for links...`);
                 
                 document.getElementById('loading').style.display = 'none';
                 
-                // Extract all valid playable items
+                // Aggressive extraction
                 const validItems = extractPlayableItems(data);
                 
                 if (validItems.length === 0) {
-                    log(`ERROR: Could not find any stream links inside the JSON file.`, true);
+                    log(`ERROR: Could not find stream links. Here is what the JSON looks like:`, true);
+                    // Print the first 500 characters of the JSON so we can see the exact formatting
+                    log(`<span style="color:#aaa;">${JSON.stringify(data).substring(0, 500)}...</span>`);
                     return;
                 }
 
@@ -65,31 +64,44 @@
                 console.error(error);
                 document.getElementById('loading').style.display = 'none';
                 log(`CRITICAL FAILURE: ${error.message}`, true);
-                log(`Check if the GitHub URL is correct and the repository is public.`, true);
             }
         }
 
-        // DEEP SCANNER: Recursively searches the JSON for anything that looks like a playable stream
         function extractPlayableItems(obj) {
             let foundItems = [];
             
-            // If the current object is an array, check all items inside it
             if (Array.isArray(obj)) {
                 obj.forEach(item => {
                     foundItems = foundItems.concat(extractPlayableItems(item));
                 });
             } 
-            // If it's an object, check if it has a URL. If not, scan its children.
             else if (typeof obj === 'object' && obj !== null) {
-                const streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url;
+                let streamUrl = '';
                 
-                if (streamUrl && typeof streamUrl === 'string' && (streamUrl.includes('http') || streamUrl.includes('.mpd') || streamUrl.includes('.m3u8'))) {
-                    // We found a valid stream object!
+                // 1. Look for known keys
+                streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
+
+                // 2. If not found, aggressively scan ALL values in the object for a web link
+                if (!streamUrl) {
+                    for (let key in obj) {
+                        const val = obj[key];
+                        if (typeof val === 'string' && val.startsWith('http') && (val.includes('.m3u8') || val.includes('.mpd') || val.includes('akamaized'))) {
+                            streamUrl = val;
+                            break; // found one!
+                        }
+                    }
+                }
+
+                if (streamUrl && typeof streamUrl === 'string' && streamUrl.startsWith('http')) {
+                    // Store the found URL cleanly so buildCards can use it
+                    obj.extracted_url = streamUrl;
                     foundItems.push(obj);
                 } else {
                     // Dig deeper into nested objects
                     for (let key in obj) {
-                        foundItems = foundItems.concat(extractPlayableItems(obj[key]));
+                        if (typeof obj[key] === 'object') {
+                            foundItems = foundItems.concat(extractPlayableItems(obj[key]));
+                        }
                     }
                 }
             }
@@ -100,10 +112,24 @@
             const playlistContainer = document.getElementById('playlist');
             
             items.forEach((item, index) => {
-                const streamUrl = item.play_url || item.url || item.dash_url || item.hls_url;
-                const currentName = item.title || item.event_name || item.match_name || item.name || `Live Event ${index + 1}`;
-                const currentLogo = item.image || item.thumbnail || item.src || '';
+                // Using the URL we safely extracted above
+                const streamUrl = item.extracted_url; 
+                
+                // Aggressively look for a title and image
+                const currentName = item.title || item.event_name || item.match_name || item.name || item.id || `Live Event ${index + 1}`;
+                let currentLogo = item.image || item.thumbnail || item.src || item.logo || '';
+                
+                // If logo is not found, check values for image links
+                if (!currentLogo) {
+                     for (let key in item) {
+                        if (typeof item[key] === 'string' && (item[key].endsWith('.png') || item[key].endsWith('.jpg') || item[key].includes('images'))) {
+                            currentLogo = item[key];
+                            break;
+                        }
+                    }
+                }
 
+                // Make sure to encode the URL so tokens don't break the query string
                 const finalPlayerUrl = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
 
                 const card = document.createElement('a');
