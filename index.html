@@ -27,7 +27,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
   const rawUrl = "https://feeds.intoday.in/aajtak/api/aajtakhd/master.m3u8";
   
   // The magic: Just combine your HTTPS proxy and the HTTP URL
-  const proxyUrl = "https://proxy.lrl45.workers.dev/" + rawUrl;
+  const proxyUrl = "https://vlc-proxy.vgtv.workers.dev/" + rawUrl;
 
   document.addEventListener("DOMContentLoaded", async () => {
     shaka.polyfill.installAll();
