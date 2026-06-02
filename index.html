@@ -3,263 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonyLiv Playlist Player</title>
+    <title>SonyLiv Sports</title>
     <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --blue-primary: #2563eb;
+            --blue-hover: #1d4ed8;
+            --red-live: #dc2626;
+            --gray-tag: #f3f4f6;
+            --gray-border: #e5e7eb;
+            --upcoming-bg: #f3f4f6;
+            --upcoming-text: #9ca3af;
+        }
+
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #121212; 
-            color: #ffffff; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
             margin: 0; 
-            padding: 20px; 
+            padding: 30px 20px; 
         }
-        h1 { 
+        
+        .header-title { 
             text-align: center; 
-            margin-bottom: 30px; 
-            color: #ffc107; 
+            margin-bottom: 40px; 
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #000; 
+            letter-spacing: -0.5px;
         }
-        h2 {
-            max-width: 1200px;
-            margin: 30px auto 15px auto;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
-        }
-        .live-heading { color: #ff4c4c; }
-        .upcoming-heading { color: #00bcd4; }
         
         #loading { 
             text-align: center; 
             font-size: 1.2rem; 
-            color: #aaa; 
+            color: var(--text-muted); 
         }
-        .grid-container { 
+
+        .playlist-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-            gap: 20px; 
-            max-width: 1200px; 
-            margin: 0 auto 40px auto; 
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+            gap: 24px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
         }
-        .channel-card { 
-            background: #1e1e1e; 
-            border-radius: 10px; 
-            padding: 20px; 
+
+        /* Card Container */
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 20px; 
             text-decoration: none; 
-            color: white; 
-            transition: all 0.2s ease-in-out; 
             display: flex; 
             flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            text-align: center; 
-            border: 1px solid #333; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+
+        /* Image Section */
+        .card-header {
             position: relative;
-        }
-        .channel-card:hover { 
-            transform: translateY(-5px); 
-            border-color: #ffc107; 
-            box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2); 
-        }
-        .upcoming-card {
-            opacity: 0.85;
-            cursor: not-allowed;
-        }
-        .upcoming-card:hover {
-            border-color: #00bcd4;
-            box-shadow: 0 6px 12px rgba(0, 188, 212, 0.2);
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #e5e7eb;
         }
         .channel-logo { 
-            max-width: 100%; 
-            height: 120px; 
-            margin-bottom: 15px; 
-            object-fit: cover; 
-            border-radius: 6px; 
-        }
-        .channel-title { 
-            font-size: 16px; 
-            font-weight: 600; 
-            word-wrap: break-word; 
-        }
-        .badge {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+
+        /* Live Badge Overlay */
+        .live-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--red-live);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3);
+        }
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .category-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8b9eb3;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
         }
-        .badge-live { background-color: #ff4c4c; color: #fff; }
-        .badge-upcoming { background-color: #00bcd4; color: #fff; }
+
+        .channel-title { 
+            font-size: 18px; 
+            font-weight: 800; 
+            line-height: 1.4;
+            margin-bottom: 20px; 
+            color: var(--text-main);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Tags Area */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .tag {
+            background: var(--gray-tag);
+            border: 1px solid var(--gray-border);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .sport-tag {
+            background: #4f46e5;
+            color: white;
+            border: none;
+        }
+        .lang-tag {
+            background: #f59e0b;
+            color: white;
+            border: none;
+        }
+
+        /* Meta Info */
+        .meta-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        /* Live Card Specifics */
+        a.card.live-card { cursor: pointer; }
+        a.card.live-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12); 
+        }
+        .btn-live { background: var(--blue-primary); color: white; }
+        a.card.live-card:hover .btn-live { background: var(--blue-hover); }
+
+        /* Upcoming Card Specifics */
+        div.card.upcoming-card { cursor: not-allowed; opacity: 0.8; filter: grayscale(10%); }
+        .btn-upcoming { background: var(--upcoming-bg); color: var(--upcoming-text); }
+
+        /* Section Titles */
+        .section-header {
+            max-width: 1400px;
+            margin: 40px auto 20px auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header h2 { margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 800; }
+        .empty-msg { color: var(--text-muted); font-style: italic; grid-column: 1 / -1;}
         
-        .error { 
-            color: #ff4c4c; 
-            text-align: center; 
-            grid-column: 1 / -1;
-            padding: 20px;
-        }
-        .empty-message {
-            color: #aaa;
-            font-style: italic;
-            grid-column: 1 / -1;
-            padding: 10px 0;
-        }
+        svg { width: 16px; height: 16px; fill: currentColor; }
     </style>
 </head>
 <body>
 
-    <h1>SonyLiv Tracker</h1>
-    <div id="loading">Fetching events...</div>
+    <div class="header-title">SonyLiv Sports</div>
+    <div id="loading">Scanning for matches...</div>
+    
+    <div class="section-header">
+        <svg style="color:var(--red-live)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle></svg>
+        <h2>Live Matches</h2>
+    </div>
+    <div id="live-playlist" class="playlist-grid"></div>
 
-    <h2 class="live-heading">🔴 Live Now</h2>
-    <div id="live-playlist" class="grid-container"></div>
-
-    <h2 class="upcoming-heading">📅 Upcoming Events</h2>
-    <div id="upcoming-playlist" class="grid-container"></div>
+    <div class="section-header" style="margin-top: 50px;">
+        <svg style="color:var(--text-muted)" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"></path></svg>
+        <h2>Upcoming Matches</h2>
+    </div>
+    <div id="upcoming-playlist" class="playlist-grid"></div>
 
     <script>
         const JSON_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
         const PLAYER_BASE_URL = 'https://webplay.rf.gd/sonyliv-events/player.html?url=';
+        const fallbackImage = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=`;
+
+        const iconTrophy = `<svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 0 0 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z"></path></svg>`;
+        const iconPlay = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>`;
+        const iconHourglass = `<svg viewBox="0 0 24 24"><path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"></path></svg>`;
 
         async function loadPlaylist() {
             try {
                 const response = await fetch(JSON_URL, { cache: "no-store" });
-                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-                
+                if (!response.ok) throw new Error(`HTTP Error`);
                 const data = await response.json();
                 document.getElementById('loading').style.display = 'none';
                 
-                // Parse out all entries aggressively
-                const allItems = extractAllItems(data);
-                
-                // Categorize into live and upcoming pools
+                const allItems = extractItems(data);
                 const liveItems = [];
                 const upcomingItems = [];
-                
+
                 allItems.forEach(item => {
-                    const status = (item.status || '').toLowerCase();
-                    const isLiveFlag = item.isLive === true || item.live === true || status === 'live';
-                    const isUpcomingFlag = item.isUpcoming === true || status === 'upcoming' || status === 'scheduled';
-                    
-                    if (isLiveFlag) {
+                    // Check explicitly if isLive is true or if it has an extracted stream URL
+                    if (item.isLive === true || String(item['EVENT URL']).includes('http') || item.extracted_url) {
                         liveItems.push(item);
-                    } else if (isUpcomingFlag) {
-                        upcomingItems.push(item);
                     } else {
-                        // Fallback: If it has a playable URL, assume it's live right now
-                        if (item.extracted_url) {
-                            liveItems.push(item);
-                        } else {
-                            upcomingItems.push(item);
-                        }
+                        upcomingItems.push(item);
                     }
                 });
 
-                buildGrid(liveItems, 'live-playlist', true);
-                buildGrid(upcomingItems, 'upcoming-playlist', false);
+                renderGrid(liveItems, 'live-playlist', true);
+                renderGrid(upcomingItems, 'upcoming-playlist', false);
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('live-playlist').innerHTML = '<div class="error">Failed to load events. Check your connection or JSON format.</div>';
+                document.getElementById('loading').innerHTML = '<span style="color:var(--red-live);">Failed to load events.</span>';
             }
         }
 
-        // Deep scanner looking for items (pulling stream URLs if available)
-        function extractAllItems(obj) {
+        function extractItems(obj) {
             let foundItems = [];
-            
+
             if (Array.isArray(obj)) {
-                obj.forEach(item => {
-                    foundItems = foundItems.concat(extractAllItems(item));
-                });
-            } 
-            else if (typeof obj === 'object' && obj !== null) {
-                // If it has standard properties of an event entry
-                if (obj.title || obj.event_name || obj.match_name || obj.name || obj.id) {
-                    
-                    // Attempt to locate a valid stream URL inside this block
-                    let streamUrl = obj.play_url || obj.url || obj.dash_url || obj.hls_url || obj.link || obj.file || obj.stream_url || obj.video;
-                    if (!streamUrl) {
-                        for (let key in obj) {
-                            const val = obj[key];
-                            if (typeof val === 'string' && val.startsWith('http') && (val.includes('.m3u8') || val.includes('.mpd') || val.includes('akamaized'))) {
-                                streamUrl = val;
-                                break;
-                            }
+                obj.forEach(item => foundItems = foundItems.concat(extractItems(item)));
+            } else if (typeof obj === 'object' && obj !== null) {
+                
+                // Mapped to exact variables provided
+                let streamUrl = obj.video_url || obj['EVENT URL'] || obj.dai_url || obj.play_url || obj.url;
+                let currentName = obj.match_name || obj['MATCH NAME'] || obj.event_name || obj['EVENT NAME'] || obj.title;
+                
+                if (!streamUrl) {
+                    for (let key in obj) {
+                        if (typeof obj[key] === 'string' && obj[key].startsWith('http') && (obj[key].includes('.m3u8') || obj[key].includes('.mpd'))) {
+                            streamUrl = obj[key]; break;
                         }
                     }
-                    if (streamUrl) obj.extracted_url = streamUrl;
-                    
-                    foundItems.push(obj);
+                }
+
+                if (streamUrl || currentName) {
+                    let newItem = { ...obj };
+                    if (streamUrl) newItem.extracted_url = streamUrl;
+                    foundItems.push(newItem);
                 } else {
-                    // Dig down to locate potential objects
                     for (let key in obj) {
-                        if (typeof obj[key] === 'object') {
-                            foundItems = foundItems.concat(extractAllItems(obj[key]));
-                        }
+                        if (typeof obj[key] === 'object') foundItems = foundItems.concat(extractItems(obj[key]));
                     }
                 }
             }
             return foundItems;
         }
 
-        function buildGrid(items, containerId, isLiveSection) {
+        function renderGrid(items, containerId, isLive) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
 
             if (items.length === 0) {
-                container.innerHTML = `<div class="empty-message">No ${isLiveSection ? 'live' : 'upcoming'} events scheduled at this moment.</div>`;
+                container.innerHTML = `<div class="empty-msg">No ${isLive ? 'live' : 'upcoming'} events scheduled right now.</div>`;
                 return;
             }
 
             items.forEach((item, index) => {
                 const streamUrl = item.extracted_url; 
-                const currentName = item.title || item.event_name || item.match_name || item.name || item.id || `Event ${index + 1}`;
-                let currentLogo = item.image || item.thumbnail || item.src || item.logo || '';
                 
-                if (!currentLogo) {
-                     for (let key in item) {
-                        if (typeof item[key] === 'string' && (item[key].endsWith('.png') || item[key].endsWith('.jpg') || item[key].includes('images'))) {
-                            currentLogo = item[key];
-                            break;
-                        }
-                    }
-                }
+                // Title (Match Name)
+                const currentName = item.match_name || item['MATCH NAME'] || item.title || item.event_name || `Live Event ${index + 1}`;
+                
+                // Subtitle (Event Name)
+                const category = item.event_name || item['EVENT NAME'] || item.tournament || 'SONYLIV SPORTS';
+                
+                // Image
+                let currentLogo = item.src || item['EVENT IMAGE'] || item.image || item.thumbnail || fallbackImage;
+
+                // Tags
+                const sport = item.event_category || item['EVENT CATEGORY'] || item.sport || 'Sports';
+                const lang = item.audioLanguageName || item['EVENT LANGUAGE'] || '';
 
                 let card;
-                if (isLiveSection && streamUrl) {
-                    // Interactive links for live events
+                if (isLive && streamUrl) {
                     card = document.createElement('a');
-                    card.className = 'channel-card';
+                    card.className = 'card live-card';
                     card.href = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
                     card.target = '_blank';
                 } else {
-                    // Non-clickable placeholder container for upcoming links without active players
                     card = document.createElement('div');
-                    card.className = 'channel-card upcoming-card';
+                    card.className = 'card upcoming-card';
                 }
 
-                // Append status badge
-                const badge = document.createElement('span');
-                badge.className = `badge ${isLiveSection ? 'badge-live' : 'badge-upcoming'}`;
-                badge.textContent = isLiveSection ? 'LIVE' : (item.startTime || item.time || 'SOON');
-                card.appendChild(badge);
-
-                if (currentLogo) {
-                    const img = document.createElement('img');
-                    img.src = currentLogo;
-                    img.alt = currentName;
-                    img.className = 'channel-logo';
-                    img.onerror = function() { this.style.display = 'none'; };
-                    card.appendChild(img);
-                }
-
-                const title = document.createElement('div');
-                title.className = 'channel-title';
-                title.textContent = currentName;
-                card.appendChild(title);
+                card.innerHTML = `
+                    <div class="card-header">
+                        ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
+                        <img src="${currentLogo}" alt="Cover" class="channel-logo" onerror="this.src='${fallbackImage}'">
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="category-wrapper">
+                            ${iconTrophy}
+                            <span>${category}</span>
+                        </div>
+                        
+                        <div class="channel-title">${currentName}</div>
+                        
+                        <div class="tags-container">
+                            <span class="tag sport-tag">${sport}</span>
+                            ${lang ? `<span class="tag lang-tag">${lang}</span>` : ''}
+                        </div>
+                        
+                        ${isLive 
+                            ? `<div class="action-btn btn-live">${iconPlay} WATCH LIVE</div>` 
+                            : `<div class="action-btn btn-upcoming">${iconHourglass} UPCOMING</div>`
+                        }
+                    </div>
+                `;
 
                 container.appendChild(card);
             });
