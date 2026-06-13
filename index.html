@@ -1,379 +1,201 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonyLiv Sports</title>
-    <style>
-        :root {
-            --bg-color: #f4f6f8;
-            --card-bg: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --blue-primary: #2563eb;
-            --blue-hover: #1d4ed8;
-            --red-live: #dc2626;
-            --gray-tag: #f3f4f6;
-            --gray-border: #e5e7eb;
-            --upcoming-bg: #f3f4f6;
-            --upcoming-text: #9ca3af;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JioTV Channels</title>
 
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 20px 15px; 
-        }
-        
-        .header-title { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #000; 
-            letter-spacing: -0.5px;
-        }
-        
-        #loading { 
-            text-align: center; 
-            font-size: 1.1rem; 
-            color: var(--text-muted); 
-        }
+<script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css">
 
-        /* FLEX GRID: Forces cards to align perfectly in the center of the screen */
-        .playlist-grid { 
-            display: flex; 
-            flex-wrap: wrap;
-            justify-content: center; /* Centers the cards horizontally */
-            gap: 16px; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        /* Card Container */
-        .card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            text-decoration: none; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid rgba(0,0,0,0.04);
-            overflow: hidden;
-            width: 100%;
-            max-width: 280px; /* Keeps cards compact */
-            flex: 1 1 260px; /* Allows smooth shrinking/growing */
-        }
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial,sans-serif;
+}
 
-        /* Image Section */
-        .card-header {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
-            background-color: #e5e7eb;
-        }
-        .channel-logo { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:20px;
+    padding:20px;
+}
 
-        /* Live Badge */
-        .live-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: var(--red-live);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            letter-spacing: 0.5px;
-            z-index: 2;
-            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
-        }
-        .live-dot {
-            width: 5px;
-            height: 5px;
-            background-color: white;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-        }
+.card{
+    background:#1f2937;
+    border-radius:15px;
+    padding:15px;
+    cursor:pointer;
+    transition:.3s;
+}
 
-        /* Card Body */
-        .card-body {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            align-items: center; /* Centers all text inside the card */
-            text-align: center;
-        }
+.card:hover{
+    transform:translateY(-5px);
+}
 
-        .category-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: #8b9eb3;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
+.card img{
+    width:100%;
+    height:130px;
+    object-fit:contain;
+    background:white;
+    border-radius:10px;
+}
 
-        /* Title */
-        .channel-title { 
-            font-size: 15px; 
-            font-weight: 800; 
-            line-height: 1.3;
-            margin-bottom: 12px; 
-            color: var(--text-main);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            width: 100%;
-        }
+.card h3{
+    margin-top:15px;
+    text-align:center;
+}
 
-        /* Tags Area */
-        .tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-        .tag {
-            background: var(--gray-tag);
-            border: 1px solid var(--gray-border);
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-        .sport-tag { background: #4f46e5; color: white; border: none; }
-        .lang-tag { background: #f59e0b; color: white; border: none; }
+#playerPage{
+    display:none;
+    width:100vw;
+    height:100vh;
+}
 
-        /* Action Buttons */
-        .action-btn {
-            margin-top: auto;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 12px;
-            display: flex;
-            justify-content: center; /* PERFECTLY CENTERS BUTTON TEXT */
-            align-items: center;
-            text-align: center;
-            gap: 6px;
-            transition: background 0.2s ease;
-            border: none;
-        }
+.shaka-video-container{
+    width:100%;
+    height:100%;
+    background:black;
+}
 
-        /* Interactive states */
-        a.card.live-card { cursor: pointer; }
-        a.card.live-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1); 
-            border-color: #bfdbfe;
-        }
-        .btn-live { background: var(--blue-primary); color: white; }
-        a.card.live-card:hover .btn-live { background: var(--blue-hover); }
-
-        /* Upcoming states */
-        div.card.upcoming-card { cursor: not-allowed; opacity: 0.8; filter: grayscale(10%); }
-        .btn-upcoming { background: var(--upcoming-bg); color: var(--upcoming-text); }
-
-        /* Section Titles - CENTERED */
-        .section-header {
-            max-width: 1400px;
-            margin: 30px auto 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* CENTERS THE SECTION TITLE */
-            gap: 8px;
-            text-align: center;
-        }
-        .section-header h2 { margin: 0; font-size: 1.3rem; color: var(--text-main); font-weight: 800; }
-        .empty-msg { color: var(--text-muted); font-size: 13px; font-style: italic; width: 100%; text-align: center; }
-        
-        /* Shrunk Icons */
-        svg { width: 14px; height: 14px; fill: currentColor; }
-    </style>
+video{
+    width:100%;
+    height:100%;
+}
+</style>
 </head>
 <body>
 
-    <div class="header-title">SonyLiv Sports</div>
-    <div id="loading">Scanning for matches...</div>
-    
-    <div class="section-header">
-        <svg style="color:var(--red-live)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle></svg>
-        <h2>Live Matches</h2>
+<div id="homePage">
+    <div class="grid" id="channels"></div>
+</div>
+
+<div id="playerPage">
+    <div class="shaka-video-container" id="player-container">
+        <video id="video" autoplay playsinline></video>
     </div>
-    <div id="live-playlist" class="playlist-grid"></div>
+</div>
 
-    <div class="section-header" style="margin-top: 40px;">
-        <svg style="color:var(--text-muted)" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"></path></svg>
-        <h2>Upcoming Matches</h2>
-    </div>
-    <div id="upcoming-playlist" class="playlist-grid"></div>
+<script>
 
-    <script>
-        const JSON_URL = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
-        const PLAYER_BASE_URL = 'https://webplay.rf.gd/sonyliv-events/player.html?url=';
-        const fallbackImage = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=`;
+const params = new URLSearchParams(window.location.search);
 
-        const iconTrophy = `<svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 0 0 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z"></path></svg>`;
-        const iconPlay = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>`;
-        const iconHourglass = `<svg viewBox="0 0 24 24"><path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"></path></svg>`;
+if(params.get("url")){
 
-        async function loadPlaylist() {
-            try {
-                const response = await fetch(JSON_URL, { cache: "no-store" });
-                if (!response.ok) throw new Error(`HTTP Error`);
-                const data = await response.json();
-                document.getElementById('loading').style.display = 'none';
-                
-                const allItems = extractItems(data);
-                const liveItems = [];
-                const upcomingItems = [];
+    document.getElementById("homePage").style.display="none";
+    document.getElementById("playerPage").style.display="block";
 
-                allItems.forEach(item => {
-                    if (item.isLive === true || String(item['EVENT URL']).includes('http') || item.extracted_url) {
-                        liveItems.push(item);
-                    } else {
-                        upcomingItems.push(item);
-                    }
-                });
+    shaka.polyfill.installAll();
 
-                renderGrid(liveItems, 'live-playlist', true);
-                renderGrid(upcomingItems, 'upcoming-playlist', false);
+    if(shaka.Player.isBrowserSupported()){
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerHTML = '<span style="color:var(--red-live);">Failed to load events.</span>';
-            }
+        const video = document.getElementById("video");
+        const container = document.getElementById("player-container");
+
+        const player = new shaka.Player(video);
+        new shaka.ui.Overlay(player, container, video);
+
+        const kid = params.get("kid") || "Null";
+        const key = params.get("key") || "Null";
+        const cookieHeader = params.get("cookie") || "";
+        const streamUrl = params.get("url");
+
+        let drmConfig = {
+            clearKeys: {}
+        };
+
+        if(kid !== "Null" && key !== "Null"){
+            drmConfig.clearKeys[kid] = key;
         }
 
-        function extractItems(obj) {
-            let foundItems = [];
+        player.configure({
+            drm: drmConfig
+        });
 
-            if (Array.isArray(obj)) {
-                obj.forEach(item => foundItems = foundItems.concat(extractItems(item)));
-            } else if (typeof obj === 'object' && obj !== null) {
-                let streamUrl = obj.video_url || obj['EVENT URL'] || obj.dai_url || obj.play_url || obj.url;
-                let currentName = obj.match_name || obj['MATCH NAME'] || obj.event_name || obj['EVENT NAME'] || obj.title;
-                
-                if (!streamUrl) {
-                    for (let key in obj) {
-                        if (typeof obj[key] === 'string' && obj[key].startsWith('http') && (obj[key].includes('.m3u8') || obj[key].includes('.mpd'))) {
-                            streamUrl = obj[key]; break;
-                        }
-                    }
-                }
+        player.getNetworkingEngine().registerRequestFilter((type, request)=>{
 
-                if (streamUrl || currentName) {
-                    let newItem = { ...obj };
-                    if (streamUrl) newItem.extracted_url = streamUrl;
-                    foundItems.push(newItem);
-                } else {
-                    for (let key in obj) {
-                        if (typeof obj[key] === 'object') foundItems = foundItems.concat(extractItems(obj[key]));
-                    }
-                }
+            request.headers["Referer"] = "https://www.jiotv.com/";
+            request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+
+            if(cookieHeader){
+                request.headers["Cookie"] = cookieHeader;
             }
-            return foundItems;
+
+        });
+
+        player.load(streamUrl)
+            .then(()=>video.play())
+            .catch(console.error);
+    }
+
+}
+else{
+
+    fetch("https://binge-giotv.pages.dev/data/id.json")
+    .then(r=>r.json())
+    .then(data=>{
+
+        console.log(data);
+
+        let channels;
+
+        if(Array.isArray(data)){
+            channels = data;
+        }
+        else if(data.channels){
+            channels = data.channels;
+        }
+        else if(data.data){
+            channels = data.data;
+        }
+        else{
+            channels = Object.values(data);
         }
 
-        function renderGrid(items, containerId, isLive) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
+        let html = "";
 
-            if (items.length === 0) {
-                container.innerHTML = `<div class="empty-msg">No ${isLive ? 'live' : 'upcoming'} events scheduled right now.</div>`;
-                return;
-            }
+        channels.forEach(channel=>{
 
-            items.forEach((item, index) => {
-                const streamUrl = item.extracted_url; 
-                
-                const currentName = item.match_name || item['MATCH NAME'] || item.title || item.event_name || `Live Event ${index + 1}`;
-                const category = item.event_name || item['EVENT NAME'] || item.tournament || 'SONYLIV SPORTS';
-                let currentLogo = item.src || item['EVENT IMAGE'] || item.image || item.thumbnail || fallbackImage;
-
-                const sport = item.event_category || item['EVENT CATEGORY'] || item.sport || 'Sports';
-                
-                // SMART LANGUAGE CORRECTOR
-                let lang = item.audioLanguageName || item['EVENT LANGUAGE'] || item.language || '';
-                const langDetectorString = (streamUrl || '') + ' ' + (item.contentId || '');
-                const trueLangMatch = langDetectorString.match(/\/(ENG|HIN|TAM|TEL|MAL|BEN|MAR|PUN|GUJ)\/|_(ENG|HIN|TAM|TEL|MAL|BEN|MAR|PUN|GUJ)/i);
-                
-                if (trueLangMatch) {
-                    lang = (trueLangMatch[1] || trueLangMatch[2]).toUpperCase();
-                }
-
-                let card;
-                if (isLive && streamUrl) {
-                    card = document.createElement('a');
-                    card.className = 'card live-card';
-                    card.href = `${PLAYER_BASE_URL}${encodeURIComponent(streamUrl)}`;
-                    card.target = '_blank';
-                } else {
-                    card = document.createElement('div');
-                    card.className = 'card upcoming-card';
-                }
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
-                        <img src="${currentLogo}" alt="Cover" class="channel-logo" onerror="this.src='${fallbackImage}'">
-                    </div>
-                    
-                    <div class="card-body">
-                        <div class="category-wrapper">
-                            ${iconTrophy}
-                            <span>${category}</span>
-                        </div>
-                        
-                        <div class="channel-title" title="${currentName}">${currentName}</div>
-                        
-                        <div class="tags-container">
-                            <span class="tag sport-tag">${sport}</span>
-                            ${lang ? `<span class="tag lang-tag">${lang}</span>` : ''}
-                        </div>
-                        
-                        ${isLive 
-                            ? `<div class="action-btn btn-live">${iconPlay} WATCH LIVE</div>` 
-                            : `<div class="action-btn btn-upcoming">${iconHourglass} UPCOMING</div>`
-                        }
-                    </div>
-                `;
-
-                container.appendChild(card);
+            const qs = new URLSearchParams({
+                name: channel.name || "",
+                url: channel.url || "",
+                cookie: channel.cookie || "",
+                kid: channel.keyid || "",
+                key: channel.key || ""
             });
-        }
 
-        loadPlaylist();
-    </script>
+            html += `
+            <div class="card"
+            onclick="window.open(location.pathname + '?' + '${qs}', '_blank')">
+
+                <img src="${channel.logo}">
+                <h3>${channel.name}</h3>
+
+            </div>
+            `;
+        });
+
+        document.getElementById("channels").innerHTML = html;
+
+    })
+    .catch(err=>{
+        console.log(err);
+        document.getElementById("channels").innerHTML =
+        "<h2 style='padding:20px'>Failed to load channels</h2>";
+    });
+
+}
+
+</script>
+
 </body>
 </html>
+```
