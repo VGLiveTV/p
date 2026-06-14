@@ -109,12 +109,14 @@
 
 <div id="player-view">
     <div class="shaka-video-container" id="player-container">
-        <video id="video" autoplay muted playsinline preload="metadata"></video>
+        <video id="video" autoplay playsinline preload="metadata"></video>
     </div>
 </div>
 
 <script>
-    const JSON_URL = "https://binge-giotv.pages.dev/data/id.json";
+    // Obfuscating the URL slightly by decoding it at runtime
+    const _0xef4 = ["aHR0cHM6Ly9iaW5nZS1naW90di5wYWdlcy5kZXYvZGF0YS9pZC5qc29u"];
+    const JSON_URL = atob(_0xef4[0]);
 
     document.addEventListener('DOMContentLoaded', async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -160,26 +162,35 @@
         const videoEl = document.getElementById('video');
         const container = document.getElementById('player-container');
 
-        let channel = null;
+        let streamUrl = "";
+        let kid = "";
+        let key = "";
+        let cookieHeader = "";
+
         try {
             const res = await fetch(JSON_URL, { cache: "no-store" });
-            const data = await res.json();
+            let data = await res.json();
             const allChannels = data.channels || (Array.isArray(data) ? data : Object.values(data));
-            channel = allChannels.find(c => (c.name || c.title) === targetName);
+            let channel = allChannels.find(c => (c.name || c.title) === targetName);
+            
+            if (!channel) return;
+
+            document.title = channel.name || channel.title;
+            if (channel.logo) document.getElementById('favicon').href = channel.logo;
+
+            // Map variables locally
+            streamUrl = channel.url || channel.streamUrl || "";
+            kid = channel.keyId || channel.kid || "";
+            key = channel.key || channel.k || "";
+            cookieHeader = channel.cookie || channel.cookieHeader || "";
+            
+            // Immediately clean up reference to the fetched JSON data in memory
+            data = null;
+            channel = null;
         } catch (e) {
-            console.error("Database error.");
+            console.error("Playback initialization failed.");
             return;
         }
-
-        if (!channel) return;
-
-        document.title = channel.name || channel.title;
-        if (channel.logo) document.getElementById('favicon').href = channel.logo;
-
-        const streamUrl = channel.url || channel.streamUrl || "";
-        const kid = channel.keyId || channel.kid || "";
-        const key = channel.key || channel.k || "";
-        const cookieHeader = channel.cookie || channel.cookieHeader || "";
 
         const player = new shaka.Player(videoEl);
         const ui = new shaka.ui.Overlay(player, container, videoEl);
@@ -223,7 +234,6 @@
             await player.load(streamUrl);
             videoEl.play();
         } catch (e) {
-            console.error("Stream Load Error:", e);
             if (e.code === 6001) { 
                 player.configure({ drm: {} });
                 try { 
@@ -231,6 +241,13 @@
                     videoEl.play(); 
                 } catch(err){}
             }
+        } finally {
+            // Memory Wipe: Erase plaintext keys and variables from runtime scope immediately after loading
+            streamUrl = null;
+            kid = null;
+            key = null;
+            cookieHeader = null;
+            drmConfig = null;
         }
     }
 </script>
