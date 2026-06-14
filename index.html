@@ -1,199 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>JioTV Channels</title>
+<link rel="icon" href="https://raw.githubusercontent.com/VGLive/tv/refs/heads/main/fav.png">
+<meta name="referrer" content="no-referrer">
 
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css" />
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+    /* --- Universal Resets --- */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    
+    html, body {
+        width: 100%;
+        height: 100%;
+        background: #0f172a;
+        color: white;
+        font-family: Arial, sans-serif;
+        overflow-x: hidden;
+    }
 
-body{
-    background:#111827;
-    color:white;
-    font-family:Arial,sans-serif;
-}
+    /* --- Dashboard Styles --- */
+    #dashboard-view {
+        padding: 20px;
+        min-height: 100%;
+    }
+    
+    h1 { margin-bottom: 20px; }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-    gap:20px;
-    padding:20px;
-}
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+    }
 
-.card{
-    background:#1f2937;
-    border-radius:15px;
-    padding:15px;
-    cursor:pointer;
-    transition:.3s;
-}
+    .card {
+        background: #1e293b;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,.4);
+        cursor: pointer;
+        transition: transform 0.2s, border-color 0.2s;
+        border: 2px solid transparent;
+    }
 
-.card:hover{
-    transform:translateY(-5px);
-}
+    .card:hover {
+        transform: translateY(-5px);
+        border-color: #38bdf8;
+    }
 
-.card img{
-    width:100%;
-    height:130px;
-    object-fit:contain;
-    background:white;
-    border-radius:10px;
-}
+    .card img {
+        width: 100%;
+        height: 140px;
+        object-fit: contain;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
 
-.card h3{
-    margin-top:15px;
-    text-align:center;
-}
+    .card h2 {
+        color: #38bdf8;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
 
-#playerPage{
-    display:none;
-    width:100vw;
-    height:100vh;
-}
+    .item {
+        margin-bottom: 12px;
+        font-size: 13px;
+        word-break: break-all;
+    }
 
-.shaka-video-container{
-    width:100%;
-    height:100%;
-    background:black;
-}
+    .label {
+        color: #fbbf24;
+        font-weight: bold;
+    }
 
-video{
-    width:100%;
-    height:100%;
-}
+    /* --- Player Styles --- */
+    #player-view {
+        display: none; /* Hidden until a channel is clicked */
+        width: 100%;
+        height: 100%;
+        background: #000;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+    }
+
+    .shaka-video-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #000;
+    }
+
+    .custom-watermark {
+        position: absolute;
+        z-index: 40;
+        pointer-events: none;
+        top: 65%;
+        left: 6%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Back Button for Player */
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 999;
+        background: rgba(30, 41, 59, 0.8);
+        color: white;
+        border: 1px solid #38bdf8;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+    .back-btn:hover { background: #38bdf8; color: #000; }
+
+    @media(max-width: 700px){
+        .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
+    }
 </style>
 </head>
 <body>
 
-<div id="homePage">
-    <div class="grid" id="channels"></div>
+<div id="dashboard-view">
+    <h1>JioTV Channels</h1>
+    <div class="container" id="channels">
+        <p>Loading channel registry...</p>
+    </div>
 </div>
 
-<div id="playerPage">
+<div id="player-view">
+    <button class="back-btn" onclick="closePlayer()">← Back to Channels</button>
     <div class="shaka-video-container" id="player-container">
-        <video id="video" autoplay playsinline></video>
+        <video id="video" autoplay playsinline preload="metadata"></video>
+        <div class="custom-watermark"></div>
     </div>
 </div>
 
 <script>
+    let globalChannels = [];
+    let shakaPlayerInstance = null;
 
-const params = new URLSearchParams(window.location.search);
-
-if(params.get("url")){
-
-    document.getElementById("homePage").style.display="none";
-    document.getElementById("playerPage").style.display="block";
-
-    shaka.polyfill.installAll();
-
-    if(shaka.Player.isBrowserSupported()){
-
-        const video = document.getElementById("video");
-        const container = document.getElementById("player-container");
-
-        const player = new shaka.Player(video);
-        new shaka.ui.Overlay(player, container, video);
-
-        const kid = params.get("kid") || "Null";
-        const key = params.get("key") || "Null";
-        const cookieHeader = params.get("cookie") || "";
-        const streamUrl = params.get("url");
-
-        let drmConfig = {
-            clearKeys: {}
-        };
-
-        if(kid !== "Null" && key !== "Null"){
-            drmConfig.clearKeys[kid] = key;
-        }
-
-        player.configure({
-            drm: drmConfig
-        });
-
-        player.getNetworkingEngine().registerRequestFilter((type, request)=>{
-
-            request.headers["Referer"] = "https://www.jiotv.com/";
-            request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-
-            if(cookieHeader){
-                request.headers["Cookie"] = cookieHeader;
-            }
-
-        });
-
-        player.load(streamUrl)
-            .then(()=>video.play())
-            .catch(console.error);
-    }
-
-}
-else{
-
+    // 1. Fetch JSON and Build Dashboard
     fetch("https://binge-giotv.pages.dev/data/id.json")
-    .then(r=>r.json())
-    .then(data=>{
-
-        console.log(data);
-
-        let channels;
-
-        if(Array.isArray(data)){
-            channels = data;
-        }
-        else if(data.channels){
-            channels = data.channels;
-        }
-        else if(data.data){
-            channels = data.data;
-        }
-        else{
-            channels = Object.values(data);
-        }
-
+    .then(res => res.json())
+    .then(data => {
+        // Safely extract array depending on JSON structure
+        globalChannels = data.channels || (Array.isArray(data) ? data : Object.values(data));
+        
         let html = "";
-
-        channels.forEach(channel=>{
-
-            const qs = new URLSearchParams({
-                name: channel.name || "",
-                url: channel.url || "",
-                cookie: channel.cookie || "",
-                kid: channel.keyid || "",
-                key: channel.key || ""
-            });
-
+        globalChannels.forEach((channel, index) => {
+            // Added onclick event passing the array index
             html += `
-            <div class="card"
-            onclick="window.open(location.pathname + '?' + '${qs}', '_blank')">
-
-                <img src="${channel.logo}">
-                <h3>${channel.name}</h3>
-
+            <div class="card" onclick="launchPlayer(${index})">
+                <img src="${channel.logo}" alt="${channel.name || channel.title}">
+                <h2>${channel.name || channel.title}</h2>
+                <div class="item">
+                    <span class="label">Channel URL</span><br>
+                    ${channel.url || channel.streamUrl}
+                </div>
+                <div class="item">
+                    <span class="label">Channel Cookie</span><br>
+                    ${channel.cookie || channel.cookieHeader || "N/A"}
+                </div>
+                <div class="item">
+                    <span class="label">Key ID</span><br>
+                    ${channel.keyId || channel.kid}
+                </div>
+                <div class="item">
+                    <span class="label">Key</span><br>
+                    ${channel.key || channel.k}
+                </div>
             </div>
             `;
         });
-
         document.getElementById("channels").innerHTML = html;
-
     })
-    .catch(err=>{
-        console.log(err);
-        document.getElementById("channels").innerHTML =
-        "<h2 style='padding:20px'>Failed to load channels</h2>";
+    .catch(err => {
+        document.getElementById("channels").innerHTML = `<p style="color:red;">Error loading channels: ${err.message}</p>`;
     });
 
-}
+    // 2. Launch Player and Inject Data
+    async function launchPlayer(index) {
+        const channel = globalChannels[index];
+        
+        // Hide dashboard, show player
+        document.getElementById('dashboard-view').style.display = 'none';
+        document.getElementById('player-view').style.display = 'block';
+        document.title = channel.name || channel.title;
 
+        // Map variables securely from the selected channel object
+        const streamUrl = channel.url || channel.streamUrl || "";
+        const kid = channel.keyId || channel.kid || "";
+        const key = channel.key || channel.k || "";
+        const cookieHeader = channel.cookie || channel.cookieHeader || "";
+
+        // Ensure Shaka is installed
+        shaka.polyfill.installAll();
+        if (!shaka.Player.isBrowserSupported()) {
+            alert("Browser not supported for Shaka Player.");
+            return;
+        }
+
+        const videoEl = document.getElementById('video');
+        const container = document.getElementById('player-container');
+
+        // Destroy previous instance if it exists to prevent memory leaks
+        if (shakaPlayerInstance) {
+            await shakaPlayerInstance.destroy();
+        }
+
+        // Initialize new Player
+        shakaPlayerInstance = new shaka.Player(videoEl);
+        const ui = new shaka.ui.Overlay(shakaPlayerInstance, container, videoEl);
+
+        ui.configure({
+            addBigPlayButton: true,
+            addSeekBar: false,
+            controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
+            seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
+        });
+
+        // Inject Widevine DRM Keys
+        let drmConfig = { clearKeys: {} };
+        if (kid && key && kid !== "Null" && key !== "Null") {
+            drmConfig.clearKeys[kid] = key;
+        }
+
+        shakaPlayerInstance.configure({
+            drm: drmConfig,
+            manifest: { defaultPresentationDelay: 5 },
+            streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
+        });
+
+        // Inject Network Request Headers & Cookie
+        shakaPlayerInstance.getNetworkingEngine().registerRequestFilter((type, request) => {
+            request.headers['Referer'] = 'https://www.jiotv.com/';
+            request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
+
+            if (cookieHeader && cookieHeader !== "PUT_YOUR_COOKIE_HERE" && cookieHeader !== "N/A") {
+                request.headers['Cookie'] = cookieHeader;
+
+                if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+                     type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
+                     !request.uris[0].includes('__hdnea__')) {
+                    const sep = request.uris[0].includes('?') ? '&' : '?';
+                    let urlCookie = cookieHeader.startsWith("__hdnea__=") ? cookieHeader.substring(10) : cookieHeader;
+                    request.uris[0] += sep + "__hdnea__=" + urlCookie;
+                }
+            }
+        });
+
+        // Load Stream
+        try {
+            await shakaPlayerInstance.load(streamUrl);
+            videoEl.play();
+        } catch (e) {
+            console.error("Stream Load Error:", e);
+            if (e.code === 6001) { 
+                shakaPlayerInstance.configure({ drm: {} });
+                try { await shakaPlayerInstance.load(streamUrl); videoEl.play(); } catch(err){}
+            }
+        }
+    }
+
+    // 3. Close Player and Return to Dashboard
+    async function closePlayer() {
+        document.getElementById('player-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'block';
+        document.title = "JioTV Channels";
+        
+        const videoEl = document.getElementById('video');
+        videoEl.pause();
+        
+        if (shakaPlayerInstance) {
+            await shakaPlayerInstance.unload();
+        }
+    }
 </script>
-
 </body>
 </html>
