@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>VG TV Dashboard</title>
+<title>Live TV</title>
 <link rel="icon" id="favicon" href="https://raw.githubusercontent.com/VGLive/tv/refs/heads/main/fav.png">
 <meta name="referrer" content="no-referrer">
 
@@ -24,16 +24,13 @@
 
     /* --- Dashboard Styles --- */
     #dashboard-view {
+        display: none; /* Controlled by JS */
         padding: 30px;
         min-height: 100%;
         overflow-y: auto;
     }
     
-    h1 { 
-        margin-bottom: 30px; 
-        color: #38bdf8;
-        text-align: center;
-    }
+    h1 { margin-bottom: 30px; color: #38bdf8; text-align: center; }
 
     .container {
         display: grid;
@@ -58,10 +55,7 @@
         text-align: center;
     }
 
-    .card:hover {
-        transform: translateY(-8px);
-        border-color: #38bdf8;
-    }
+    .card:hover { transform: translateY(-8px); border-color: #38bdf8; }
 
     .card img {
         width: 100%;
@@ -73,19 +67,15 @@
         padding: 10px;
     }
 
-    .card h2 {
-        color: #f1f5f9;
-        font-size: 16px;
-        font-weight: 600;
-    }
+    .card h2 { color: #f1f5f9; font-size: 16px; font-weight: 600; }
 
-    /* --- Player Styles --- */
+    /* --- Player Styles (Pure & Clean) --- */
     #player-view {
-        display: none; 
+        display: none; /* Controlled by JS */
         width: 100%;
         height: 100%;
         background: #000;
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
     }
@@ -119,13 +109,6 @@
         color: rgba(255, 255, 255, 0.12);
     }
 
-    .loading-msg {
-        position: absolute;
-        color: white;
-        font-size: 18px;
-        z-index: 50;
-    }
-
     @media(max-width: 700px){
         .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
     }
@@ -142,9 +125,8 @@
 
 <div id="player-view">
     <div class="shaka-video-container" id="player-container">
-        <div class="loading-msg" id="loadingMsg">Connecting to secure stream...</div>
         <video id="video" autoplay playsinline preload="metadata"></video>
-        <div class="custom-watermark"></div>
+        <div class="custom-watermark"> </div>
     </div>
 </div>
 
@@ -152,38 +134,35 @@
     const JSON_URL = "https://binge-giotv.pages.dev/data/id.json";
 
     document.addEventListener('DOMContentLoaded', async () => {
-        // Check URL for an ID parameter (e.g., ?id=StarSports)
         const urlParams = new URLSearchParams(window.location.search);
         const channelId = urlParams.get('id');
 
         if (channelId) {
-            // If ID exists in URL, we are in the NEW TAB -> Launch Player
-            document.getElementById('dashboard-view').style.display = 'none';
+            // Setup for NEW TAB PLAYER ONLY
+            document.body.style.background = "#000";
+            document.body.style.overflow = "hidden";
             document.getElementById('player-view').style.display = 'block';
             await initPlayer(channelId);
         } else {
-            // If no ID, we are on the MAIN PAGE -> Show Dashboard
+            // Setup for DASHBOARD ONLY
             document.getElementById('dashboard-view').style.display = 'block';
-            document.getElementById('player-view').style.display = 'none';
             await initDashboard();
         }
     });
 
     // ==========================================
-    // 1. DASHBOARD LOGIC (Main Page)
+    // DASHBOARD LOGIC
     // ==========================================
     async function initDashboard() {
         try {
             const res = await fetch(JSON_URL, { cache: "no-store" });
             const data = await res.json();
-            
-            // Extract channels
             const channels = data.channels || (Array.isArray(data) ? data : Object.values(data));
             
             let html = "";
             channels.forEach((channel) => {
                 const title = channel.name || channel.title;
-                // Target="_blank" forces it to open in a new tab
+                // Opens exact same file in new tab with the ID parameter attached
                 html += `
                 <a href="?id=${encodeURIComponent(title)}" target="_blank" class="card">
                     <img src="${channel.logo}" alt="${title}" onerror="this.src='https://ui-avatars.com/api/?name=TV&background=0b0f19&color=fff'">
@@ -193,48 +172,39 @@
             });
             document.getElementById("channels").innerHTML = html;
         } catch (err) {
-            document.getElementById("channels").innerHTML = `<p style="color:red; text-align:center;">Failed to load JSON database.</p>`;
+            document.getElementById("channels").innerHTML = `<p style="color:red; text-align:center;">Failed to load database.</p>`;
         }
     }
 
     // ==========================================
-    // 2. PLAYER LOGIC (New Tab)
+    // PLAYER & DRM INJECTION LOGIC
     // ==========================================
     async function initPlayer(targetName) {
         shaka.polyfill.installAll();
-        if (!shaka.Player.isBrowserSupported()) {
-            document.getElementById('loadingMsg').innerText = "Browser not supported.";
-            return;
-        }
+        if (!shaka.Player.isBrowserSupported()) return;
 
         const videoEl = document.getElementById('video');
         const container = document.getElementById('player-container');
-        const loadingMsg = document.getElementById('loadingMsg');
 
-        // Fetch JSON to find the hidden credentials for this specific channel
+        // Secretly fetch JSON in the background to get DRM keys
         let channel = null;
         try {
             const res = await fetch(JSON_URL, { cache: "no-store" });
             const data = await res.json();
             const allChannels = data.channels || (Array.isArray(data) ? data : Object.values(data));
-            
-            // Find the exact channel by name
             channel = allChannels.find(c => (c.name || c.title) === targetName);
         } catch (e) {
-            loadingMsg.innerText = "Error fetching secure credentials.";
+            console.error("Database error.");
             return;
         }
 
-        if (!channel) {
-            loadingMsg.innerText = "Channel not found in database.";
-            return;
-        }
+        if (!channel) return;
 
-        // Update Page Title and Favicon
+        // Set Tab Title & Favicon dynamically
         document.title = channel.name || channel.title;
         if (channel.logo) document.getElementById('favicon').href = channel.logo;
 
-        // Extract sensitive data
+        // Map variables
         const streamUrl = channel.url || channel.streamUrl || "";
         const kid = channel.keyId || channel.kid || "";
         const key = channel.key || channel.k || "";
@@ -250,7 +220,7 @@
             seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
         });
 
-        // Apply Widevine Keys
+        // DRM Configuration
         let drmConfig = { clearKeys: {} };
         if (kid && key && kid !== "Null" && key !== "Null") {
             drmConfig.clearKeys[kid] = key;
@@ -262,7 +232,7 @@
             streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
         });
 
-        // Apply Jio Authentication Filters
+        // Headers & Cookie Injection
         player.getNetworkingEngine().registerRequestFilter((type, request) => {
             request.headers['Referer'] = 'https://www.jiotv.com/';
             request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
@@ -280,10 +250,9 @@
             }
         });
 
-        // Start Stream
+        // Autoplay execution
         try {
             await player.load(streamUrl);
-            loadingMsg.style.display = "none"; // Hide loading text
             videoEl.play();
         } catch (e) {
             console.error("Stream Load Error:", e);
@@ -291,13 +260,8 @@
                 player.configure({ drm: {} });
                 try { 
                     await player.load(streamUrl); 
-                    loadingMsg.style.display = "none";
                     videoEl.play(); 
-                } catch(err){
-                    loadingMsg.innerText = "Stream failed to decrypt.";
-                }
-            } else {
-                loadingMsg.innerText = "Stream playback failed.";
+                } catch(err){}
             }
         }
     }
