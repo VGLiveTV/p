@@ -1,270 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Live TV</title>
-<link rel="icon" id="favicon" href="https://raw.githubusercontent.com/VGLive/tv/refs/heads/main/fav.png">
-<meta name="referrer" content="no-referrer">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Live Stream</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon fill='orange' points='50,10 61,40 94,40 68,60 78,90 50,70 22,90 32,60 6,40 39,40'/></svg>">
+  <meta name="referrer" content="no-referrer">
 
-<script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css" />
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css" />
 
-<style>
-    /* --- Universal Resets --- */
+  <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     
     html, body {
-        width: 100%;
-        height: 100%;
-        background: #0f172a;
-        color: white;
-        font-family: Arial, sans-serif;
-    }
-
-    /* --- Dashboard Styles --- */
-    #dashboard-view {
-        display: none; /* Controlled by JS */
-        padding: 30px;
-        min-height: 100%;
-        overflow-y: auto;
-    }
-    
-    h1 { margin-bottom: 30px; color: #38bdf8; text-align: center; }
-
-    .container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 25px;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .card {
-        background: #1e293b;
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,.4);
-        cursor: pointer;
-        transition: transform 0.2s, border-color 0.2s;
-        border: 2px solid transparent;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .card:hover { transform: translateY(-8px); border-color: #38bdf8; }
-
-    .card img {
-        width: 100%;
-        height: 120px;
-        object-fit: contain;
-        background: #0b0f19;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-    }
-
-    .card h2 { color: #f1f5f9; font-size: 16px; font-weight: 600; }
-
-    /* --- Player Styles (Pure & Clean) --- */
-    #player-view {
-        display: none; /* Controlled by JS */
-        width: 100%;
-        height: 100%;
-        background: #000;
-        position: absolute;
-        top: 0;
-        left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     .shaka-video-container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     video {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        background: #000;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
     }
 
     .custom-watermark {
-        position: absolute;
-        z-index: 40;
-        pointer-events: none;
-        top: 65%;
-        left: 6%;
-        transform: translateY(-50%);
-        font-size: 11px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.12);
+      position: absolute;
+      z-index: 40;
+      pointer-events: none;
+      top: 65%;
+      left: 6%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.12);
     }
 
     @media(max-width: 700px){
-        .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
+      .custom-watermark { font-size: 9px; top: 60%; left: 16%; }
     }
-</style>
+  </style>
 </head>
 <body>
 
-<div id="dashboard-view">
-    <h1>Live Channels</h1>
-    <div class="container" id="channels">
-        <p style="grid-column: 1/-1; text-align: center;">Loading channels...</p>
-    </div>
-</div>
+  <div class="shaka-video-container" id="player-container">
+    <video id="video" autoplay muted playsinline preload="metadata"></video>
+    <div class="custom-watermark"> </div>
+  </div>
 
-<div id="player-view">
-    <div class="shaka-video-container" id="player-container">
-        <video id="video" autoplay playsinline preload="metadata"></video>
-        <div class="custom-watermark"> </div>
-    </div>
-</div>
-
-<script>
-    const JSON_URL = "https://binge-giotv.pages.dev/data/id.json";
-
+  <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const channelId = urlParams.get('id');
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) return;
 
-        if (channelId) {
-            // Setup for NEW TAB PLAYER ONLY
-            document.body.style.background = "#000";
-            document.body.style.overflow = "hidden";
-            document.getElementById('player-view').style.display = 'block';
-            await initPlayer(channelId);
-        } else {
-            // Setup for DASHBOARD ONLY
-            document.getElementById('dashboard-view').style.display = 'block';
-            await initDashboard();
-        }
-    });
+      const videoEl = document.getElementById('video');
+      const container = document.getElementById('player-container');
 
-    // ==========================================
-    // DASHBOARD LOGIC
-    // ==========================================
-    async function initDashboard() {
-        try {
-            const res = await fetch(JSON_URL, { cache: "no-store" });
-            const data = await res.json();
-            const channels = data.channels || (Array.isArray(data) ? data : Object.values(data));
+      // --- DYNAMIC DATA INJECTION START ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetChannelName = urlParams.get('id');
+
+      let kid = "";
+      let key = "";
+      let cookieHeader = "";
+      let streamUrl = "";
+
+      if (targetChannelName) {
+          try {
+              const res = await fetch("https://binge-giotv.pages.dev/data/id.json", { cache: "no-store" });
+              const data = await res.json();
+              const channels = data.channels || (Array.isArray(data) ? data : Object.values(data));
+              
+              const channel = channels.find(c => (c.name || c.title) === targetChannelName);
+              
+              if (channel) {
+                  kid = channel.keyId || channel.kid || "";
+                  key = channel.key || channel.k || "";
+                  cookieHeader = channel.cookie || channel.cookieHeader || "";
+                  streamUrl = channel.url || channel.streamUrl || "";
+                  
+                  // Dynamically update the browser tab text and icon
+                  document.title = channel.name || channel.title;
+                  if (channel.logo) {
+                      document.querySelector("link[rel='icon']").href = channel.logo;
+                  }
+              }
+          } catch (e) {
+              console.error("Failed to connect to JSON database.");
+          }
+      }
+      // --- DYNAMIC DATA INJECTION END ---
+
+      const player = new shaka.Player(videoEl);
+      const ui = new shaka.ui.Overlay(player, container, videoEl);
+
+      ui.configure({
+        addBigPlayButton: true,
+        addSeekBar: false,
+        controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','overflow_menu','fullscreen'],
+        seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
+      });
+
+      let drmConfig = { clearKeys: {} };
+      if (kid && key && kid !== "Null" && key !== "Null") {
+        drmConfig.clearKeys[kid] = key;
+      }
+
+      player.configure({
+        drm: drmConfig,
+        manifest: { defaultPresentationDelay: 5 },
+        streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
+      });
+
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        request.headers['Referer'] = 'https://www.jiotv.com/';
+        request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
+
+        if (cookieHeader && cookieHeader !== "PUT_YOUR_COOKIE_HERE") {
+          request.headers['Cookie'] = cookieHeader;
+
+          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
+               !request.uris[0].includes('__hdnea__')) {
+            const sep = request.uris[0].includes('?') ? '&' : '?';
             
-            let html = "";
-            channels.forEach((channel) => {
-                const title = channel.name || channel.title;
-                // Opens exact same file in new tab with the ID parameter attached
-                html += `
-                <a href="?id=${encodeURIComponent(title)}" target="_blank" class="card">
-                    <img src="${channel.logo}" alt="${title}" onerror="this.src='https://ui-avatars.com/api/?name=TV&background=0b0f19&color=fff'">
-                    <h2>${title}</h2>
-                </a>
-                `;
-            });
-            document.getElementById("channels").innerHTML = html;
-        } catch (err) {
-            document.getElementById("channels").innerHTML = `<p style="color:red; text-align:center;">Failed to load database.</p>`;
+            // Ensures clean appending regardless of JSON formatting
+            let urlCookie = cookieHeader.startsWith("__hdnea__=") ? cookieHeader.substring(10) : cookieHeader;
+            request.uris[0] += sep + "__hdnea__=" + urlCookie;
+          }
         }
-    }
+      });
 
-    // ==========================================
-    // PLAYER & DRM INJECTION LOGIC
-    // ==========================================
-    async function initPlayer(targetName) {
-        shaka.polyfill.installAll();
-        if (!shaka.Player.isBrowserSupported()) return;
-
-        const videoEl = document.getElementById('video');
-        const container = document.getElementById('player-container');
-
-        // Secretly fetch JSON in the background to get DRM keys
-        let channel = null;
-        try {
-            const res = await fetch(JSON_URL, { cache: "no-store" });
-            const data = await res.json();
-            const allChannels = data.channels || (Array.isArray(data) ? data : Object.values(data));
-            channel = allChannels.find(c => (c.name || c.title) === targetName);
-        } catch (e) {
-            console.error("Database error.");
-            return;
-        }
-
-        if (!channel) return;
-
-        // Set Tab Title & Favicon dynamically
-        document.title = channel.name || channel.title;
-        if (channel.logo) document.getElementById('favicon').href = channel.logo;
-
-        // Map variables
-        const streamUrl = channel.url || channel.streamUrl || "";
-        const kid = channel.keyId || channel.kid || "";
-        const key = channel.key || channel.k || "";
-        const cookieHeader = channel.cookie || channel.cookieHeader || "";
-
-        const player = new shaka.Player(videoEl);
-        const ui = new shaka.ui.Overlay(player, container, videoEl);
-
-        ui.configure({
-            addBigPlayButton: true,
-            addSeekBar: false,
-            controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','fullscreen','overflow_menu'],
-            seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
-        });
-
-        // DRM Configuration
-        let drmConfig = { clearKeys: {} };
-        if (kid && key && kid !== "Null" && key !== "Null") {
-            drmConfig.clearKeys[kid] = key;
-        }
-
-        player.configure({
-            drm: drmConfig,
-            manifest: { defaultPresentationDelay: 5 },
-            streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
-        });
-
-        // Headers & Cookie Injection
-        player.getNetworkingEngine().registerRequestFilter((type, request) => {
-            request.headers['Referer'] = 'https://www.jiotv.com/';
-            request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
-
-            if (cookieHeader && cookieHeader !== "PUT_YOUR_COOKIE_HERE" && cookieHeader !== "N/A") {
-                request.headers['Cookie'] = cookieHeader;
-
-                if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-                     type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-                     !request.uris[0].includes('__hdnea__')) {
-                    const sep = request.uris[0].includes('?') ? '&' : '?';
-                    let urlCookie = cookieHeader.startsWith("__hdnea__=") ? cookieHeader.substring(10) : cookieHeader;
-                    request.uris[0] += sep + "__hdnea__=" + urlCookie;
-                }
-            }
-        });
-
-        // Autoplay execution
-        try {
+      try {
+        if (streamUrl) {
             await player.load(streamUrl);
             videoEl.play();
-        } catch (e) {
-            console.error("Stream Load Error:", e);
-            if (e.code === 6001) { 
-                player.configure({ drm: {} });
-                try { 
-                    await player.load(streamUrl); 
-                    videoEl.play(); 
-                } catch(err){}
-            }
+        } else {
+            console.error("Stream URL is missing or empty.");
         }
-    }
-</script>
+      } catch (e) {
+        console.error("Stream Load Error:", e);
+        if (e.code === 6001) { 
+            player.configure({ drm: {} });
+            try { await player.load(streamUrl); videoEl.play(); } catch(err){}
+        }
+      }
+    });
+  </script>
 </body>
 </html>
