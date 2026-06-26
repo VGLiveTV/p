@@ -8,6 +8,11 @@
 <meta name="referrer" content="no-referrer">
 
 <style>
+  /* Ensure padding and borders are included in element widths */
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     padding: 0;
@@ -18,7 +23,7 @@
 
   /* Dashboard Section */
   .dashboard-container {
-    padding: 30px;
+    padding: 20px 15px; /* Optimized for mobile */
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -26,26 +31,29 @@
   .dashboard-logo {
     display: block;
     margin: 0 auto 15px auto;
-    height: 70px;
+    height: 60px;
     object-fit: contain;
   }
 
   .dashboard-title {
     margin: 0 0 25px 0;
-    font-size: 28px;
-    font-weight: bold; /* Updated to bold */
+    font-size: 24px;
+    font-weight: bold;
     color: #222222;
     text-align: center;
   }
 
+  /* Switched to Flexbox for perfect centering and uniform sizing */
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
   }
 
   /* Channel Cards */
   .card {
+    width: 135px; /* Fixed base width */
     background: #ffffff;
     border: 2px solid red;
     border-radius: 10px;
@@ -80,8 +88,13 @@
     color: #333333;
   }
 
+  /* Desktop Adjustments */
   @media (min-width: 768px) {
-    .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
+    .dashboard-container { padding: 40px 30px; }
+    .dashboard-logo { height: 75px; }
+    .dashboard-title { font-size: 28px; margin-bottom: 35px; }
+    .grid { gap: 20px; }
+    .card { width: 160px; padding: 20px 15px; }
     .card img { height: 55px; }
     .card-title { font-size: 14px; }
   }
