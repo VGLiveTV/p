@@ -3,100 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Live TV Dashboard</title>
+<title>Live News</title>
 <link rel="icon" href="https://i.ibb.co/ch66mWzw/live-news.png">
 <meta name="referrer" content="no-referrer">
-
 <style>
-  /* Ensure padding and borders are included in element widths */
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
-    color: #000000;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  }
-
-  /* Dashboard Section */
-  .dashboard-container {
-    padding: 20px 15px; /* Optimized for mobile */
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .dashboard-logo {
-    display: block;
-    margin: 0 auto 15px auto;
-    height: 60px;
-    object-fit: contain;
-  }
-
-  .dashboard-title {
-    margin: 0 0 25px 0;
-    font-size: 24px;
-    font-weight: bold;
-    color: #222222;
-    text-align: center;
-  }
-
-  /* Switched to Flexbox for perfect centering and uniform sizing */
-  .grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-  }
-
-  /* Channel Cards */
-  .card {
-    width: 135px; /* Fixed base width */
-    background: #ffffff;
-    border: 2px solid red;
-    border-radius: 10px;
-    padding: 15px 10px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .card:hover {
-    background: #fcfcfc;
-    border-color: #cc0000;
-    transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.12);
-  }
-
-  .card img {
-    max-width: 100%;
-    height: 45px;
-    object-fit: contain;
-    margin-bottom: 12px;
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.3;
-    color: #333333;
-  }
-
-  /* Desktop Adjustments */
-  @media (min-width: 768px) {
-    .dashboard-container { padding: 40px 30px; }
-    .dashboard-logo { height: 75px; }
-    .dashboard-title { font-size: 28px; margin-bottom: 35px; }
-    .grid { gap: 20px; }
-    .card { width: 160px; padding: 20px 15px; }
-    .card img { height: 55px; }
-    .card-title { font-size: 14px; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:#000;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .dashboard-container{padding:20px 15px;max-width:1200px;margin:0 auto}
+  .dashboard-logo{display:block;margin:0 auto 15px auto;height:60px;object-fit:contain}
+  .dashboard-title{margin:0 0 25px 0;font-size:24px;font-weight:bold;color:#222;text-align:center}
+  .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:15px}
+  .card{width:135px;background:#fff;border:2px solid red;border-radius:10px;padding:15px 10px;cursor:pointer;text-align:center;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .card:hover{background:#fcfcfc;border-color:#c00;transform:translateY(-4px);box-shadow:0 6px 12px rgba(0,0,0,.12)}
+  .card img{max-width:100%;height:45px;object-fit:contain;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:600;line-height:1.3;color:#333}
+  @media(min-width:768px){
+    .dashboard-container{padding:40px 30px}
+    .dashboard-logo{height:75px}
+    .dashboard-title{font-size:28px;margin-bottom:35px}
+    .grid{gap:20px}
+    .card{width:160px;padding:20px 15px}
+    .card img{height:55px}
+    .card-title{font-size:14px}
   }
 </style>
 </head>
@@ -104,13 +32,12 @@
 
 <div class="dashboard-container">
   <img src="https://i.ibb.co/ch66mWzw/live-news.png" alt="Live News" class="dashboard-logo">
-  <h2 class="dashboard-title">Live News Channels</h2>
+  <h2 class="dashboard-title">Live News</h2>
   <div class="grid" id="channel-grid"></div>
 </div>
 
 <script>
 (function(){
-  // Channel Data
   const channels = [
     { name: "Aaj Tak", url: "https://feeds.intoday.in/aajtak/api/aajtakhd/master.m3u8", logo: "https://jiotv.catchup.cdn.jio.com/dare_images/images/Aaj_Tak.png" },
     { name: "ABP News", url: "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/abpnews-livetv/master.m3u8", logo: "https://jiotv.catchup.cdn.jio.com/dare_images/images/ABP_News_India.png" },
@@ -125,80 +52,48 @@
   ];
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Render Dashboard Cards
     const grid = document.getElementById("channel-grid");
     channels.forEach(ch => {
       const card = document.createElement("div");
       card.className = "card";
-      card.innerHTML = `
-        <img src="${ch.logo}" alt="${ch.name}">
-        <div class="card-title">${ch.name}</div>
-      `;
-      
-      // On click, open the stream in a new tab dynamically
+      card.innerHTML = `<img src="${ch.logo}" alt="${ch.name}"><div class="card-title">${ch.name}</div>`;
       card.onclick = () => openPlayerInNewTab(ch.name, ch.url, ch.logo);
       grid.appendChild(card);
     });
   });
 
-  // Function to generate the player dynamically in a new tab
   function openPlayerInNewTab(title, streamUrl, logoUrl) {
     const newTab = window.open('about:blank', '_blank');
-    
-    // Write a standalone player HTML structure into the new tab
-    newTab.document.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>${title}</title>
-      <link rel="icon" href="https://i.ibb.co/ch66mWzw/live-news.png">
-      <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"><\/script>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css"/>
-      <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        .shaka-video-container { position: fixed; inset: 0; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-      </style>
-      </head>
-      <body>
-        <div class="shaka-video-container" id="c">
-          <video id="v" autoplay muted playsinline preload="metadata"></video>
-        </div>
-        <script>
-          document.addEventListener("DOMContentLoaded", async () => {
-            shaka.polyfill.installAll();
-            if (!shaka.Player.isBrowserSupported()) return;
-
-            const v = document.getElementById("v");
-            const c = document.getElementById("c");
-            
-            const p = new shaka.Player(v);
-            const ui = new shaka.ui.Overlay(p, c, v);
-
-            ui.configure({
-                addBigPlayButton: true,
-                addSeekBar: false,
-                controlPanelElements: ['play_pause','time_and_duration','mute','volume','spacer','overflow_menu','fullscreen']
-            });
-
-            p.configure({
-              manifest: { defaultPresentationDelay: 5 },
-              streaming: { lowLatencyMode: true, bufferingGoal: 10, rebufferingGoal: 2, safeSeekOffset: 5 }
-            });
-
-            try {
-              await p.load("${streamUrl}");
-              v.play().catch(()=>{});
-            } catch(e) {
-              console.error("Error loading stream", e);
-            }
-          });
-        <\/script>
-      </body>
-      </html>
-    `);
+    newTab.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<link rel="icon" href="https://i.ibb.co/ch66mWzw/live-news.png">
+<script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"><\/script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css"/>
+<style>
+body{margin:0;background:#000;overflow:hidden;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+.shaka-video-container{position:fixed;inset:0}
+video{width:100%;height:100%;object-fit:contain}
+</style>
+</head>
+<body>
+<div class="shaka-video-container" id="c"><video id="v" autoplay muted playsinline preload="metadata"></video></div>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  shaka.polyfill.installAll();
+  if (!shaka.Player.isBrowserSupported()) return;
+  const v = document.getElementById("v"), c = document.getElementById("c");
+  const p = new shaka.Player(v), ui = new shaka.ui.Overlay(p, c, v);
+  ui.configure({addBigPlayButton:true,addSeekBar:false,controlPanelElements:['play_pause','time_and_duration','mute','volume','spacer','overflow_menu','fullscreen']});
+  p.configure({manifest:{defaultPresentationDelay:5},streaming:{lowLatencyMode:true,bufferingGoal:10,rebufferingGoal:2,safeSeekOffset:5}});
+  try { await p.load("${streamUrl}"); v.play().catch(()=>{}); } catch(e) { console.error(e); }
+});
+<\/script>
+</body>
+</html>`);
     newTab.document.close();
   }
 })();
