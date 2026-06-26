@@ -10,8 +10,7 @@
   *{box-sizing:border-box}
   body{margin:0;background:#fff;color:#000;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
   .dashboard-container{padding:20px 15px;max-width:1200px;margin:0 auto}
-  .dashboard-logo{display:block;margin:0 auto 15px auto;height:60px;object-fit:contain}
-  .dashboard-title{margin:0 0 25px 0;font-size:24px;font-weight:bold;color:#222;text-align:center}
+  .dashboard-logo{display:block;margin:0 auto 25px auto;height:60px;object-fit:contain}
   .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:15px}
   .card{width:135px;background:#fff;border:2px solid red;border-radius:10px;padding:15px 10px;cursor:pointer;text-align:center;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .card:hover{background:#fcfcfc;border-color:#c00;transform:translateY(-4px);box-shadow:0 6px 12px rgba(0,0,0,.12)}
@@ -19,8 +18,7 @@
   .card-title{font-size:13px;font-weight:600;line-height:1.3;color:#333}
   @media(min-width:768px){
     .dashboard-container{padding:40px 30px}
-    .dashboard-logo{height:75px}
-    .dashboard-title{font-size:28px;margin-bottom:35px}
+    .dashboard-logo{margin-bottom:35px;height:75px}
     .grid{gap:20px}
     .card{width:160px;padding:20px 15px}
     .card img{height:55px}
@@ -31,8 +29,7 @@
 <body>
 
 <div class="dashboard-container">
-  <img src="https://i.ibb.co/ch66mWzw/live-news.png" alt="Live News" class="dashboard-logo">
-  <h2 class="dashboard-title">Live News</h2>
+  <img src="https://i.ibb.co/hJvZJ21n/live.png" alt="Live News" class="dashboard-logo">
   <div class="grid" id="channel-grid"></div>
 </div>
 
