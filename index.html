@@ -121,7 +121,7 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `<div class="card-logo"><img src="${c.logo}" alt="${c.name}" loading="lazy"></div><div class="card-name">${c.name}</div>`;
-                card.onclick = () => window.open(`/?url=${encodeURIComponent(c.url)}`, '_blank');
+                card.onclick = () => window.open(`/?url=${c.url}`, '_blank');
                 grid.appendChild(card);
             });
         }
