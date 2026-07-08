@@ -2,198 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VLC HTML Player (CORS Bypass)</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VG Tools</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/0jjHzmFq/vgtools.png">
     <style>
-        body { background-color: #1a1a1a; color: white; display: flex; justify-content: center; padding: 20px; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        
-        .vlc-player {
-            width: 100%; max-width: 800px; background-color: #000; border-radius: 8px;
-            overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Top Input Bar */
-        .stream-loader { display: flex; flex-wrap: wrap; background-color: #222; padding: 10px; gap: 10px; border-bottom: 1px solid #444; align-items: center; }
-        .stream-loader input[type="text"] { flex-grow: 1; padding: 8px; background: #111; border: 1px solid #555; color: #fff; border-radius: 4px; }
-        .stream-loader input[type="text"]:focus { outline: none; border-color: #ff7b00; }
-        
-        .proxy-toggle { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #aaa; cursor: pointer; }
-        
-        .stream-loader button {
-            background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold;
-        }
-        .stream-loader button:hover { background: #ff7b00; color: #000; }
-
-        /* Video Area */
-        .vlc-player video { width: 100%; display: block; background-color: #000; aspect-ratio: 16/9; }
-
-        /* Controls */
-        .controls {
-            display: flex; align-items: center; background: linear-gradient(to bottom, #333, #111);
-            padding: 10px; gap: 15px; border-top: 2px solid #ff7b00;
-        }
-        .controls button { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; padding: 5px; border-radius: 4px; }
-        .controls button:hover { background: #555; color: #ff7b00; }
-        
-        /* Sliders */
-        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #555; border-radius: 3px; }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%;
-            background: #ff7b00; margin-top: -4px;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: Arial, sans-serif; 
         }
         
-        .progress-container { flex-grow: 1; display: flex; align-items: center; }
-        .volume-container { display: flex; align-items: center; gap: 5px; width: 100px; }
-        .time-display { color: #ccc; font-size: 13px; min-width: 90px; text-align: center; }
+        body { 
+            min-height: 100vh; 
+            color: #333; 
+            background: #fff;
+            -webkit-overflow-scrolling: touch; 
+        }
+        
+        .content { 
+            padding: 20px; 
+            text-align: center; 
+        }
+        
+        .logo { 
+            max-width: 150px; 
+            margin: 10px 0 30px; 
+        }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 20px; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        
+        .card { 
+            display: block; 
+            border: 2px solid red; 
+            border-radius: 10px; 
+            padding: 15px; 
+            text-decoration: none; 
+            color: inherit; 
+            transition: .2s; 
+        }
+        
+        .card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 5px 15px rgba(255,0,0,.2); 
+        }
+        
+        .card img { 
+            height: 80px; 
+            max-width: 100%; 
+            object-fit: contain; 
+            margin-bottom: 10px; 
+        }
+        
+        .card span { 
+            font-size: 15px; 
+            font-weight: bold; 
+            display: block; 
+        }
     </style>
 </head>
 <body>
 
-    <div class="vlc-player" id="videoContainer">
+    <div class="content">
+        <img src="https://i.postimg.cc/cH51zHMp/sportslife.png" class="logo" alt="Sports Life Logo">
         
-        <div class="stream-loader">
-            <input type="text" id="streamUrl" placeholder="Paste http:// or https:// .m3u8 link here...">
-            <label class="proxy-toggle">
-                <input type="checkbox" id="useProxy"> Use CORS Proxy
-            </label>
-            <button id="loadBtn">Load</button>
-        </div>
-
-        <video id="videoElement"></video>
-        
-        <div class="controls">
-            <button id="playPauseBtn">▶ Play</button>
-            <div class="progress-container">
-                <input type="range" id="progressBar" value="0" min="0" max="100" step="0.1">
-            </div>
-            <div class="time-display">
-                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
-            </div>
-            <div class="volume-container">
-                <button id="muteBtn">🔊</button>
-                <input type="range" id="volumeBar" value="1" min="0" max="1" step="0.05">
-            </div>
-            <button id="fullscreenBtn">⛶</button>
+        <div class="grid">
+            <a href="https://starsportshd.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/7dNLzQ1F/starsports.png" alt="Star Sports">
+                <span>Star Sports</span>
+            </a>
+            
+            <a href="https://sonylivhd.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/6JXFR46P/sonyliv.png" alt="Sony LIV Sports">
+                <span>Sony LIV Sports</span>
+            </a>
+            
+            <a href="https://fancodehd.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/Kp3GTp4C/fancode.png" alt="FanCode Sports">
+                <span>FanCode Sports</span>
+            </a>
+            
+            <a href="https://willowsportslive.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/0pYb1KV0/willowsports.png" alt="Willow Sports">
+                <span>Willow Sports</span>
+            </a>
+            
+            <a href="https://fancodelive1.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/Kp3GTp4C/fancode.png" alt="FanCode 1">
+                <span>FanCode 1</span>
+            </a>
+            
+            <a href="https://fancodelive2.pages.dev/" target="_blank" class="card">
+                <img src="https://i.ibb.co/Kp3GTp4C/fancode.png" alt="FanCode 2">
+                <span>FanCode 2</span>
+            </a>
         </div>
     </div>
 
-    <script>
-        const video = document.getElementById('videoElement');
-        const streamUrlInput = document.getElementById('streamUrl');
-        const loadBtn = document.getElementById('loadBtn');
-        const useProxyCheckbox = document.getElementById('useProxy');
-        let hls = null;
-
-        function loadStream() {
-            const url = streamUrlInput.value.trim();
-            if (!url) return;
-
-            // Destroy old HLS instance if it exists
-            if (hls) {
-                hls.destroy();
-                hls = null;
-            }
-
-            if (Hls.isSupported()) {
-                // Configure HLS.js
-                const hlsConfig = {
-                    debug: false,
-                };
-
-                // If proxy is checked, intercept EVERY network request (manifests + video segments)
-                // and route it through a public proxy to bypass CORS and HTTP blocks.
-                if (useProxyCheckbox.checked) {
-                    hlsConfig.xhrSetup = function(xhr, requestUrl) {
-                        // Using corsproxy.io to wrap the URL
-                        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(requestUrl);
-                        xhr.open('GET', proxyUrl, true);
-                    };
-                }
-
-                hls = new Hls(hlsConfig);
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                    document.getElementById('playPauseBtn').textContent = '⏸ Pause';
-                });
-
-                // Error handling
-                hls.on(Hls.Events.ERROR, function (event, data) {
-                    if (data.fatal) {
-                        console.error("HLS Error:", data);
-                        if (!useProxyCheckbox.checked) {
-                            alert("Stream failed to load. This might be a CORS or HTTP error. Try checking 'Use CORS Proxy' and load again.");
-                        }
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Safari fallback (Note: Safari cannot easily proxy native playback this way)
-                video.src = url;
-                video.addEventListener('loadedmetadata', () => video.play());
-            }
-        }
-
-        loadBtn.addEventListener('click', loadStream);
-
-        // --- Standard UI Controls ---
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const progressBar = document.getElementById('progressBar');
-        const muteBtn = document.getElementById('muteBtn');
-        const volumeBar = document.getElementById('volumeBar');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-        playPauseBtn.addEventListener('click', () => {
-            if (video.paused) { video.play(); playPauseBtn.textContent = '⏸ Pause'; } 
-            else { video.pause(); playPauseBtn.textContent = '▶ Play'; }
-        });
-        video.addEventListener('click', () => playPauseBtn.click());
-
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "Live";
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        video.addEventListener('timeupdate', () => {
-            if (video.duration && isFinite(video.duration)) {
-                progressBar.value = (video.currentTime / video.duration) * 100;
-            }
-            document.getElementById('currentTime').textContent = formatTime(video.currentTime);
-        });
-
-        video.addEventListener('loadedmetadata', () => {
-            document.getElementById('duration').textContent = formatTime(video.duration);
-        });
-
-        progressBar.addEventListener('input', () => {
-            if (video.duration && isFinite(video.duration)) {
-                video.currentTime = (progressBar.value / 100) * video.duration;
-            }
-        });
-
-        volumeBar.addEventListener('input', () => {
-            video.volume = volumeBar.value;
-            video.muted = video.volume === 0;
-            muteBtn.textContent = video.muted ? '🔇' : '🔊';
-        });
-
-        muteBtn.addEventListener('click', () => {
-            video.muted = !video.muted;
-            if (video.muted) volumeBar.value = 0;
-            else { volumeBar.value = video.volume > 0 ? video.volume : 1; video.volume = volumeBar.value; }
-            muteBtn.textContent = video.muted ? '🔇' : '🔊';
-        });
-
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) document.getElementById('videoContainer').requestFullscreen();
-            else document.exitFullscreen();
-        });
-    </script>
 </body>
 </html>
