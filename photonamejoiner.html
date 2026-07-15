@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Name Joiner</title>
+    <meta name="description" content="Add name and date to photos professionally.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .input-field { transition: all 0.3s ease; border: 2px solid #e2e8f0; }
+        .input-field:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); outline: none; }
+        .color-btn { transition: all 0.3s ease; border: 2px solid transparent; }
+        .color-btn:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .color-btn.selected { border: 3px solid #4299e1; box-shadow: 0 0 0 2px white; }
+        .preview-card { transition: all 0.3s ease; }
+        .preview-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .toast-message { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+        
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <nav class="bg-white/10 backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 class="text-white font-bold text-xl"><i class="fas fa-camera mr-2"></i> Photo Name Joiner</h1>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Input Form Section -->
+            <div class="glass-effect rounded-2xl shadow-2xl p-6 md:p-8 h-fit">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-pen-fancy text-indigo-600 mr-3"></i> Customize Your Card
+                </h2>
+                
+                <form id="photoForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Name on Photo</label>
+                        <input type="text" id="nameInput" placeholder="Enter full name" class="input-field w-full px-4 py-3 rounded-xl" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Date on Photo</label>
+                        <input type="text" id="dateInput" placeholder="DD-MM-YYYY" class="input-field w-full px-4 py-3 rounded-xl" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Photo</label>
+                        <input type="file" id="photoInput" accept="image/*" class="input-field w-full px-4 py-3 rounded-xl cursor-pointer" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Font Size: <span id="fontSizeValue" class="text-indigo-600 font-bold">32</span>px
+                        </label>
+                        <input type="range" id="fontSizeInput" min="16" max="48" value="32" class="w-full accent-indigo-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Text Color</label>
+                        <div class="flex gap-3 flex-wrap">
+                            <button type="button" class="color-btn selected w-10 h-10 rounded-xl bg-black" data-color="#000000"></button>
+                            <button type="button" class="color-btn w-10 h-10 rounded-xl bg-blue-600" data-color="#2563eb"></button>
+                            <button type="button" class="color-btn w-10 h-10 rounded-xl bg-red-600" data-color="#dc2626"></button>
+                            <button type="button" class="color-btn w-10 h-10 rounded-xl bg-green-600" data-color="#16a34a"></button>
+                            <button type="button" class="color-btn w-10 h-10 rounded-xl bg-purple-600" data-color="#9333ea"></button>
+                            <button type="button" class="color-btn w-10 h-10 rounded-xl bg-white border-2 border-gray-300" data-color="#ffffff"></button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Border Style</label>
+                        <select id="borderStyle" class="input-field w-full px-4 py-3 rounded-xl">
+                            <option value="2px solid #000000">Standard Black Border</option>
+                            <option value="3px solid #000000">Thick Black Border</option>
+                            <option value="2px solid #2563eb">Blue Border</option>
+                            <option value="2px dashed #000000">Dashed Black Border</option>
+                            <option value="no-border">No Border</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Text Position</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="pos-btn border-2 rounded-lg p-2 border-gray-300 text-sm" data-pos="top">Top</button>
+                            <button type="button" class="pos-btn border-2 rounded-lg p-2 border-gray-300 text-sm" data-pos="middle">Middle</button>
+                            <button type="button" class="pos-btn border-2 rounded-lg p-2 bg-indigo-600 text-white border-indigo-600 text-sm" data-pos="bottom">Bottom</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg">
+                        Generate Photo
+                    </button>
+                </form>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="space-y-6">
+                <div class="glass-effect rounded-2xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fas fa-eye text-indigo-600 mr-3"></i> Preview
+                    </h2>
+                    
+                    <div id="previewContainer" class="min-h-[400px] flex items-center justify-center preview-card bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <div class="text-center text-gray-400">
+                            <i class="fas fa-image text-5xl mb-4"></i>
+                            <p>Fill the form and click Generate</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-2xl shadow-2xl p-6">
+                    <button id="downloadBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-download mr-2"></i> Download Image
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Elements -->
+    <canvas id="canvas" style="display: none;"></canvas>
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+    <script>
+        let selectedColor = '#000000';
+        let selectedPosition = 'bottom';
+        let generatedImageData = null;
+
+        const photoInput = document.getElementById('photoInput');
+        const nameInput = document.getElementById('nameInput');
+        const dateInput = document.getElementById('dateInput');
+        const fontSizeInput = document.getElementById('fontSizeInput');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const borderStyle = document.getElementById('borderStyle');
+        const previewContainer = document.getElementById('previewContainer');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Color Selection
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedColor = btn.dataset.color;
+            });
+        });
+
+        // Position Selection
+        document.querySelectorAll('.pos-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.pos-btn').forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+                    b.classList.add('border-gray-300');
+                });
+                btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+                selectedPosition = btn.dataset.pos;
+            });
+        });
+
+        // Font Slider
+        fontSizeInput.addEventListener('input', (e) => fontSizeValue.textContent = e.target.value);
+
+        // Generate Submission
+        document.getElementById('photoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const photoFile = photoInput.files[0];
+            if (!photoFile) return showToast('Please upload a photo', 'error');
+
+            try {
+                const img = await loadImage(photoFile);
+                const cardWidth = 600;
+                const imageHeight = 600;
+                const textSpacing = 80;
+                const cardHeight = imageHeight + textSpacing + 40;
+
+                canvas.width = cardWidth;
+                canvas.height = cardHeight;
+
+                // Background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, cardWidth, cardHeight);
+
+                // Border
+                if (borderStyle.value !== 'no-border') {
+                    const [thickness, type, color] = parseBorderStyle(borderStyle.value);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = thickness;
+                    if (type === 'dashed') ctx.setLineDash([5, 5]);
+                    ctx.strokeRect(thickness/2, thickness/2, cardWidth - thickness, cardHeight - thickness);
+                    ctx.setLineDash([]);
+                }
+
+                // Image
+                const imgWidth = cardWidth - 40;
+                const imgHeight = (img.height * imgWidth) / img.width;
+                ctx.drawImage(img, 20, 20, imgWidth, Math.min(imgHeight, imageHeight - 20));
+
+                // Text
+                ctx.font = `bold ${fontSizeInput.value}px Poppins, sans-serif`;
+                ctx.fillStyle = selectedColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const textY = selectedPosition === 'top' ? imageHeight + 20 : (selectedPosition === 'middle' ? imageHeight + 40 : imageHeight + 60);
+                
+                ctx.fillText(nameInput.value, cardWidth / 2, textY);
+                ctx.font = `500 ${parseInt(fontSizeInput.value)-4}px Poppins, sans-serif`;
+                ctx.fillText(dateInput.value, cardWidth / 2, textY + parseInt(fontSizeInput.value) + 10);
+
+                // Display
+                const previewImg = document.createElement('img');
+                previewImg.src = canvas.toDataURL();
+                previewImg.className = 'max-w-full h-auto rounded-xl shadow-lg';
+                
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(previewImg);
+                previewContainer.classList.remove('bg-gray-50', 'border-2', 'border-dashed');
+
+                generatedImageData = canvas.toDataURL('image/png');
+                downloadBtn.disabled = false;
+                showToast('Image generated successfully!', 'success');
+
+            } catch (error) {
+                showToast('Error processing image', 'error');
+            }
+        });
+
+        // Download
+        downloadBtn.addEventListener('click', () => {
+            if (generatedImageData) {
+                const link = document.createElement('a');
+                link.href = generatedImageData;
+                link.download = `photo-card-${Date.now()}.png`;
+                link.click();
+            }
+        });
+
+        // Helpers
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function parseBorderStyle(style) {
+            const parts = style.split(' ');
+            return [parseInt(parts[0]), parts[1], parts.slice(2).join(' ')];
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+            toast.className = `toast-message ${bg} text-white px-6 py-3 rounded-lg shadow-lg mb-2`;
+            toast.textContent = message;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
